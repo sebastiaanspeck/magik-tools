@@ -16,6 +16,7 @@ public final class ProductDefCheckList extends CheckList<ProductDefCheck, CheckF
   @SuppressWarnings("checkstyle:JavadocVariable")
   public static final String PROFILE_DIR = "nl/ramsolutions/sw/sonar/l10n/productdef/rules";
 
+  @SuppressWarnings("checkstyle:JavadocVariable")
   private static final ProductDefCheckList INSTANCE = new ProductDefCheckList();
 
   private ProductDefCheckList() {}

@@ -26,6 +26,7 @@ public final class MagikTypedCheckList extends CheckList<MagikCheck, MagikTypedC
   @SuppressWarnings("checkstyle:JavadocVariable")
   public static final String PROFILE_DIR = "nl/ramsolutions/sw/sonar/l10n/magiktyped/rules";
 
+  @SuppressWarnings("checkstyle:JavadocVariable")
   private static final MagikTypedCheckList INSTANCE = new MagikTypedCheckList();
 
   private MagikTypedCheckList() {}

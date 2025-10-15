@@ -15,6 +15,7 @@ public final class ModuleDefCheckList extends CheckList<ModuleDefCheck, CheckFix
   @SuppressWarnings("checkstyle:JavadocVariable")
   public static final String PROFILE_DIR = "nl/ramsolutions/sw/sonar/l10n/moduledef/rules";
 
+  @SuppressWarnings("checkstyle:JavadocVariable")
   private static final ModuleDefCheckList INSTANCE = new ModuleDefCheckList();
 
   private ModuleDefCheckList() {}

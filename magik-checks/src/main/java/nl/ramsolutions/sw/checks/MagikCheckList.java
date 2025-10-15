@@ -54,6 +54,7 @@ public final class MagikCheckList extends CheckList<MagikCheck, CheckFixer> {
   @SuppressWarnings("checkstyle:JavadocVariable")
   public static final String PROFILE_DIR = "nl/ramsolutions/sw/sonar/l10n/magik/rules";
 
+  @SuppressWarnings("checkstyle:JavadocVariable")
   private static final MagikCheckList INSTANCE = new MagikCheckList();
 
   private MagikCheckList() {}
