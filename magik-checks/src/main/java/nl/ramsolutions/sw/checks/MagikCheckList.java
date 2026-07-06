@@ -55,6 +55,7 @@ import nl.ramsolutions.sw.checks.magik.VariableNamingCheck;
 import nl.ramsolutions.sw.checks.magik.WarnedCallCheck;
 import nl.ramsolutions.sw.checks.magik.fixers.FormattingFixer;
 import nl.ramsolutions.sw.checks.magik.fixers.UseValueCompareFixer;
+import nl.ramsolutions.sw.checks.magik.fixers.VariableNamingScopePrefixFixer;
 
 /** Magik {@link Check} list. */
 public final class MagikCheckList extends CheckList<MagikCheck, MagikCodeActionSupplier> {
@@ -141,6 +142,7 @@ public final class MagikCheckList extends CheckList<MagikCheck, MagikCodeActionS
       getFixers() {
     return Map.of(
         FormattingCheck.class, List.of(FormattingFixer.class),
-        UseValueCompareCheck.class, List.of(UseValueCompareFixer.class));
+        UseValueCompareCheck.class, List.of(UseValueCompareFixer.class),
+        VariableNamingCheck.class, List.of(VariableNamingScopePrefixFixer.class));
   }
 }

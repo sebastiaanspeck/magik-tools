@@ -11,3 +11,12 @@ _local count << 1
 _local index << 1
 _local total << 1
 </pre>
+<p>If you have enabled forbidding scope prefixes, variable and parameter names may not start with <code>p_</code>, <code>l_</code>, <code>i_</code> or <code>c_</code> either.</p>
+<h2>Non-compliant Code Example</h2>
+<pre data-diff-id="2" data-diff-type="noncompliant">
+_local l_count << 1
+</pre>
+<h2>Compliant Code Example</h2>
+<pre data-diff-id="2" data-diff-type="compliant">
+_local count << 1
+</pre>
