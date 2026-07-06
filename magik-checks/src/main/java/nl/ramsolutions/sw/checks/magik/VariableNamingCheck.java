@@ -18,9 +18,16 @@ public class VariableNamingCheck extends MagikCheck {
   public static final String CHECK_KEY = "VariableNaming";
 
   private static final String MESSAGE = "Give the variable \"%s\" a proper descriptive name.";
+  private static final String MESSAGE_SCOPE_PREFIX =
+      "Do not prefix the variable \"%s\" with p_, l_, i_ or c_.";
   private static final int DEFAULT_MIN_LENGTH = 3;
   private static final int DEFAULT_MAX_LENGTH = 32;
   private static final String DEFAULT_WHITELIST = "x,y,z,id";
+  private static final boolean DEFAULT_FORBID_SCOPE_PREFIXES = false;
+  private static final String SCOPE_PREFIXES = "p_,l_,i_,c_";
+
+  @SuppressWarnings("checkstyle:JavadocVariable")
+  public static final String PROPERTY_KEY_FORBID_SCOPE_PREFIXES = "forbid scope prefixes";
 
   /** Minimum number of characters for a variable name. */
   @RuleProperty(
@@ -49,6 +56,15 @@ public class VariableNamingCheck extends MagikCheck {
   @SuppressWarnings("checkstyle:VisibilityModifier")
   public String whitelist = DEFAULT_WHITELIST;
 
+  /** Forbid variable/parameter names prefixed with p_, l_, i_ or c_. */
+  @RuleProperty(
+      key = PROPERTY_KEY_FORBID_SCOPE_PREFIXES,
+      defaultValue = "" + DEFAULT_FORBID_SCOPE_PREFIXES,
+      description = "Forbid variable/parameter names prefixed with p_, l_, i_ or c_",
+      type = "BOOLEAN")
+  @SuppressWarnings("checkstyle:VisibilityModifier")
+  public boolean forbidScopePrefixes = DEFAULT_FORBID_SCOPE_PREFIXES;
+
   @Override
   protected void walkPostMagik(final AstNode node) {
     final MagikFile magikFile = this.getMagikFile();
@@ -59,10 +75,15 @@ public class VariableNamingCheck extends MagikCheck {
             || scopeEntry.isType(ScopeEntry.Type.DEFINITION)
             || scopeEntry.isType(ScopeEntry.Type.PARAMETER)) {
           final String identifier = scopeEntry.getIdentifier();
+          final AstNode identifierNode = scopeEntry.getDefinitionNode();
 
           if (!this.isValidName(identifier)) {
             final String message = MESSAGE.formatted(identifier);
-            final AstNode identifierNode = scopeEntry.getDefinitionNode();
+            this.addIssue(identifierNode, message);
+          }
+
+          if (this.forbidScopePrefixes && VariableNamingCheck.hasScopePrefix(identifier)) {
+            final String message = MESSAGE_SCOPE_PREFIX.formatted(identifier);
             this.addIssue(identifierNode, message);
           }
         }
@@ -70,20 +91,37 @@ public class VariableNamingCheck extends MagikCheck {
     }
   }
 
-  private String stripPrefix(final String identifier) {
+  /**
+   * Check whether an identifier starts with one of the scope prefixes (p_, l_, i_ or c_).
+   *
+   * @param identifier Identifier to check.
+   * @return {@code true} if the identifier is scope-prefixed.
+   */
+  public static boolean hasScopePrefix(final String identifier) {
     final String lowered = identifier.toLowerCase();
-    if (lowered.startsWith("p_")
-        || lowered.startsWith("l_")
-        || lowered.startsWith("i_")
-        || lowered.startsWith("c_")) {
+    return VariableNamingCheck.getScopePrefixItems().stream().anyMatch(lowered::startsWith);
+  }
+
+  /**
+   * Strip a scope prefix (p_, l_, i_ or c_) from an identifier, if present.
+   *
+   * @param identifier Identifier to strip.
+   * @return Identifier without its scope prefix, or the original identifier if it had none.
+   */
+  public static String stripScopePrefix(final String identifier) {
+    if (VariableNamingCheck.hasScopePrefix(identifier)) {
       return identifier.substring(2);
     }
 
     return identifier;
   }
 
+  private static List<String> getScopePrefixItems() {
+    return List.of(SCOPE_PREFIXES.split(","));
+  }
+
   private boolean isValidName(final String identifier) {
-    final String strippedIdentifier = this.stripPrefix(identifier);
+    final String strippedIdentifier = VariableNamingCheck.stripScopePrefix(identifier);
     final List<String> whitelistItems = this.getWhitelistItems();
     return whitelistItems.contains(strippedIdentifier)
         || (strippedIdentifier.length() >= this.minLength

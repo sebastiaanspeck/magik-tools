@@ -134,4 +134,84 @@ class VariableNamingCheckTest {
     """;
     assertThat(check).reportsIssueCount(code, 2);
   }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        """
+        _block
+          _local l_count
+        _endblock
+        """,
+        """
+        _block
+          _local p_count
+        _endblock
+        """,
+        """
+        _block
+          _local i_count
+        _endblock
+        """,
+        """
+        _block
+          _local c_count
+        _endblock
+        """,
+        """
+        _method a.b(p_count)
+        _endmethod
+        """,
+      })
+  void testScopePrefixesAllowedByDefault(final String code) {
+    final MagikCheck check = new VariableNamingCheck();
+    assertThat(check).reportsNoIssues(code);
+  }
+
+  @ParameterizedTest
+  @ValueSource(
+      strings = {
+        """
+        _block
+          _local l_count
+        _endblock
+        """,
+        """
+        _block
+          _local p_count
+        _endblock
+        """,
+        """
+        _block
+          _local i_count
+        _endblock
+        """,
+        """
+        _block
+          _local c_count
+        _endblock
+        """,
+        """
+        _method a.b(p_count)
+        _endmethod
+        """,
+      })
+  void testScopePrefixesForbiddenWhenEnabled(final String code) {
+    final VariableNamingCheck check = new VariableNamingCheck();
+    check.forbidScopePrefixes = true;
+    assertThat(check).reportsIssueCount(code, 1);
+  }
+
+  @Test
+  void testScopePrefixesForbiddenDoesNotFlagPlainName() {
+    final VariableNamingCheck check = new VariableNamingCheck();
+    check.forbidScopePrefixes = true;
+    final String code =
+        """
+        _block
+          _local count
+        _endblock
+        """;
+    assertThat(check).reportsNoIssues(code);
+  }
 }
