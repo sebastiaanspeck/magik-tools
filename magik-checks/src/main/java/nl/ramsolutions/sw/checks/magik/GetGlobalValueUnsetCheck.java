@@ -1,10 +1,14 @@
 package nl.ramsolutions.sw.checks.magik;
 
 import com.sonar.sslr.api.AstNode;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import java.util.List;
 import java.util.Set;
 import nl.ramsolutions.sw.checks.MagikCheck;
 import nl.ramsolutions.sw.magik.analysis.helpers.ProcedureInvocationNodeHelper;
+import nl.ramsolutions.sw.magik.analysis.scope.GlobalScope;
+import nl.ramsolutions.sw.magik.analysis.scope.Scope;
+import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
 import nl.ramsolutions.sw.magik.api.MagikGrammar;
 import org.sonar.check.Rule;
 
@@ -39,8 +43,25 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
       return;
     }
 
+    this.reportGuardedCalls(node, valueNode);
+
+    // The value may have been assigned in an earlier statement, e.g.:
+    //   foo << get_global_value(:var)
+    //   _if foo _isnt _unset _then ... _endif
+    final AstNode identifierNode = valueNode.getFirstChild(MagikGrammar.IDENTIFIER);
+    if (identifierNode == null) {
+      return;
+    }
+
+    final AstNode assignmentNode = this.getAssignmentNode(identifierNode);
+    if (assignmentNode != null) {
+      this.reportGuardedCalls(node, assignmentNode);
+    }
+  }
+
+  private void reportGuardedCalls(final AstNode equalityNode, final AstNode searchNode) {
     for (final AstNode invocationNode :
-        valueNode.getDescendants(MagikGrammar.PROCEDURE_INVOCATION)) {
+        searchNode.getDescendants(MagikGrammar.PROCEDURE_INVOCATION)) {
       final ProcedureInvocationNodeHelper invocationHelper =
           new ProcedureInvocationNodeHelper(invocationNode);
       if (GUARDED_CALLS.stream().noneMatch(invocationHelper::isProcedureInvocationOf)) {
@@ -48,8 +69,28 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
       }
 
       final String identifier = invocationHelper.getInvokedIdentifier();
-      this.addIssue(node, MESSAGE.formatted(identifier));
+      this.addIssue(equalityNode, MESSAGE.formatted(identifier + "()"));
     }
+  }
+
+  @CheckForNull
+  private AstNode getAssignmentNode(final AstNode identifierNode) {
+    final GlobalScope globalScope = this.getMagikFile().getGlobalScope();
+    final Scope scope = globalScope.getScopeForNode(identifierNode);
+    if (scope == null) {
+      // Robustness.
+      return null;
+    }
+
+    final ScopeEntry scopeEntry = scope.getScopeEntry(identifierNode);
+    if (scopeEntry == null) {
+      // Robustness.
+      return null;
+    }
+
+    final AstNode definitionNode = scopeEntry.getDefinitionNode();
+    return definitionNode.getFirstAncestor(
+        MagikGrammar.ASSIGNMENT_EXPRESSION, MagikGrammar.VARIABLE_DEFINITION);
   }
 
   private boolean isUnset(final AstNode node) {
