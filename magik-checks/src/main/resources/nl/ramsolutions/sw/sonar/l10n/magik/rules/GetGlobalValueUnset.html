@@ -7,7 +7,8 @@ missing for another reason.
 <p>
 Only the <code>_isnt _unset</code> form is flagged. <code>_is _unset</code> is not, since
 that branch may already fail loudly (e.g. by raising a condition) and this check cannot
-know how it is handled.
+know how it is handled. Likewise, an <code>_if</code> with an <code>_elif</code>/<code>_else</code>
+is not flagged, since the missing-value case is presumably handled there.
 </p>
 <h2>Non-compliant Code Example</h2>
 <pre data-diff-id="1" data-diff-type="noncompliant">

@@ -12,7 +12,7 @@ import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
 import nl.ramsolutions.sw.magik.api.MagikGrammar;
 import org.sonar.check.Rule;
 
-/** Check for comparing the result of get_global_value() against _isnt _unset. */
+/** Check for get_global_value() guarded with _isnt _unset. */
 @Rule(key = GetGlobalValueUnsetCheck.CHECK_KEY)
 public class GetGlobalValueUnsetCheck extends MagikCheck {
 
@@ -43,6 +43,10 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
       return;
     }
 
+    if (this.hasElseHandling(node)) {
+      return;
+    }
+
     this.reportGuardedCalls(node, valueNode);
 
     final AstNode identifierNode = valueNode.getFirstChild(MagikGrammar.IDENTIFIER);
@@ -54,6 +58,26 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
     if (assignmentNode != null) {
       this.reportGuardedCalls(node, assignmentNode);
     }
+  }
+
+  private boolean isUnset(final AstNode node) {
+    return node.is(MagikGrammar.ATOM) && node.getFirstChild(MagikGrammar.UNSET) != null;
+  }
+
+  private boolean hasElseHandling(final AstNode equalityNode) {
+    final AstNode conditionalExpressionNode =
+        equalityNode.getFirstAncestor(MagikGrammar.CONDITIONAL_EXPRESSION);
+    if (conditionalExpressionNode == null) {
+      return false;
+    }
+
+    final AstNode ifNode = conditionalExpressionNode.getParent();
+    if (ifNode == null || ifNode.isNot(MagikGrammar.IF)) {
+      return false;
+    }
+
+    // An _elif/_else means the missing-value case is handled elsewhere.
+    return ifNode.hasDirectChildren(MagikGrammar.ELIF, MagikGrammar.ELSE);
   }
 
   private void reportGuardedCalls(final AstNode equalityNode, final AstNode searchNode) {
@@ -86,9 +110,5 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
     final AstNode definitionNode = scopeEntry.getDefinitionNode();
     return definitionNode.getFirstAncestor(
         MagikGrammar.ASSIGNMENT_EXPRESSION, MagikGrammar.VARIABLE_DEFINITION);
-  }
-
-  private boolean isUnset(final AstNode node) {
-    return node.is(MagikGrammar.ATOM) && node.getFirstChild(MagikGrammar.UNSET) != null;
   }
 }
