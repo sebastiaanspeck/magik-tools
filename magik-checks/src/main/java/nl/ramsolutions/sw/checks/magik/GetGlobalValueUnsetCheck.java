@@ -12,7 +12,7 @@ import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
 import nl.ramsolutions.sw.magik.api.MagikGrammar;
 import org.sonar.check.Rule;
 
-/** Check for comparing the result of get_global_value() against _unset. */
+/** Check for comparing the result of get_global_value() against _isnt _unset. */
 @Rule(key = GetGlobalValueUnsetCheck.CHECK_KEY)
 public class GetGlobalValueUnsetCheck extends MagikCheck {
 
@@ -20,7 +20,7 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
   public static final String CHECK_KEY = "GetGlobalValueUnset";
 
   private static final String MESSAGE =
-      "Do not silently test the result of '%s' against _unset, let it fail instead.";
+      "Do not guard '%s' with _isnt _unset; let a missing global fail instead.";
   private static final Set<String> GUARDED_CALLS =
       Set.of("get_global_value", "sw:get_global_value");
 
@@ -28,7 +28,7 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
   protected void walkPreEqualityExpression(final AstNode node) {
     final List<AstNode> children = node.getChildren();
     final String operator = children.get(1).getTokenValue();
-    if (!operator.equals("_is") && !operator.equals("_isnt")) {
+    if (!operator.equals("_isnt")) {
       return;
     }
 
@@ -45,9 +45,6 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
 
     this.reportGuardedCalls(node, valueNode);
 
-    // The value may have been assigned in an earlier statement, e.g.:
-    //   foo << get_global_value(:var)
-    //   _if foo _isnt _unset _then ... _endif
     final AstNode identifierNode = valueNode.getFirstChild(MagikGrammar.IDENTIFIER);
     if (identifierNode == null) {
       return;
@@ -69,7 +66,7 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
       }
 
       final String identifier = invocationHelper.getInvokedIdentifier();
-      this.addIssue(equalityNode, MESSAGE.formatted(identifier + "()"));
+      this.addIssue(equalityNode, MESSAGE.formatted(identifier));
     }
   }
 
@@ -78,13 +75,11 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
     final GlobalScope globalScope = this.getMagikFile().getGlobalScope();
     final Scope scope = globalScope.getScopeForNode(identifierNode);
     if (scope == null) {
-      // Robustness.
       return null;
     }
 
     final ScopeEntry scopeEntry = scope.getScopeEntry(identifierNode);
     if (scopeEntry == null) {
-      // Robustness.
       return null;
     }
 
