@@ -53,6 +53,20 @@ class GetGlobalValueUnsetCheckTest {
         _endif
         """,
         "_if get_global_value(:var) _isnt _unset _then get_global_value(:var).run() _endif",
+        """
+        foo << get_global_value(:var)
+        _if foo _isnt _unset
+        _then
+            foo.run()
+        _endif
+        """,
+        """
+        _local foo << get_global_value(:var)
+        _if foo _isnt _unset
+        _then
+            foo.run()
+        _endif
+        """,
       })
   void testInvalid(final String code) {
     final MagikCheck check = new GetGlobalValueUnsetCheck();
