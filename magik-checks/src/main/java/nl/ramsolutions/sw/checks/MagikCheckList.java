@@ -17,6 +17,7 @@ import nl.ramsolutions.sw.checks.magik.ForbiddenCallCheck;
 import nl.ramsolutions.sw.checks.magik.ForbiddenGlobalUsageCheck;
 import nl.ramsolutions.sw.checks.magik.ForbiddenInheritanceCheck;
 import nl.ramsolutions.sw.checks.magik.FormattingCheck;
+import nl.ramsolutions.sw.checks.magik.GetGlobalValueUnsetCheck;
 import nl.ramsolutions.sw.checks.magik.HidesVariableCheck;
 import nl.ramsolutions.sw.checks.magik.ImportMissingDefinitionCheck;
 import nl.ramsolutions.sw.checks.magik.LeaveInProtectionCheck;
@@ -92,6 +93,7 @@ public final class MagikCheckList extends CheckList<MagikCheck, MagikCodeActionS
         ForbiddenGlobalUsageCheck.class,
         ForbiddenInheritanceCheck.class,
         FormattingCheck.class,
+        GetGlobalValueUnsetCheck.class,
         MissingPragmaCheck.class,
         HidesVariableCheck.class,
         ImportMissingDefinitionCheck.class,

@@ -1,0 +1,17 @@
+<p>
+Testing the result of <code>get_global_value()</code> against <code>_unset</code> silently
+swallows the case where the global does not exist, instead of failing loudly. This is
+sometimes used as a hack to work around module load-order issues, but it hides real bugs
+when the global is missing for another reason.
+</p>
+<h2>Non-compliant Code Example</h2>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_if (foo << get_global_value(:var)) _isnt _unset
+_then
+    foo.run()
+_endif
+</pre>
+<h2>Compliant Code Example</h2>
+<pre data-diff-id="1" data-diff-type="compliant">
+(foo << get_global_value(:var)).run()
+</pre>

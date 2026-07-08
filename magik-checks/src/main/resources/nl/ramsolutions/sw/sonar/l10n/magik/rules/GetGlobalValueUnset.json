@@ -1,0 +1,16 @@
+{
+  "title": "Result of guarded call should not be tested against _unset",
+  "type": "BUG",
+  "status": "ready",
+  "remediation": {
+    "func": "Constant\/Issue",
+    "constantCost": "15min"
+  },
+  "tags": [
+    "convention",
+    "design"
+  ],
+  "defaultSeverity": "Major",
+  "ruleSpecification": "GetGlobalValueUnset",
+  "sqKey": "get-global-value-unset"
+}
