@@ -47,6 +47,22 @@ class GetGlobalValueUnsetCheckTest {
         _endif
         >> exemplar_global
         """,
+        """
+        _if (foo << get_global_value(:var)) _isnt _unset
+        _then
+            foo.run()
+        _else
+            condition.raise(:error, :format_args, {"missing"})
+        _endif
+        """,
+        """
+        (n_cols, col_resize_values) << _if (excol << sw:get_global_value(@vrdb!report_collections_manager)) _isnt _unset
+        _then
+            >> 3, {33, 33, 33}
+        _else
+            >> 2, {50, 50}
+        _endif
+        """,
       })
   void testValid(final String code) {
     final MagikCheck check = new GetGlobalValueUnsetCheck();
@@ -81,14 +97,6 @@ class GetGlobalValueUnsetCheckTest {
         _if foo _isnt _unset
         _then
             foo.run()
-        _endif
-        """,
-        """
-        _if (foo << get_global_value(:var)) _isnt _unset
-        _then
-            foo.run()
-        _else
-            condition.raise(:error, :format_args, {"missing"})
         _endif
         """,
         """
