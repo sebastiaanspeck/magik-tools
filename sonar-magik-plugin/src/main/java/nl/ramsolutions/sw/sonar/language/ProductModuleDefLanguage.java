@@ -16,7 +16,7 @@ public class ProductModuleDefLanguage extends AbstractLanguage {
   public static final String KEY = "product_module_def";
 
   /** Name for language. */
-  public static final String NAME = "Product Module Definition";
+  public static final String NAME = "Magik Product/Module Definition";
 
   /** Category for language. */
   public static final String PRODUCT_DEF_CATEGORY = "product_module_def";

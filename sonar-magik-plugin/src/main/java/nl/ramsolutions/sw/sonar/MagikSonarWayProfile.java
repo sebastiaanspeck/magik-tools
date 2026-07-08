@@ -2,22 +2,25 @@ package nl.ramsolutions.sw.sonar;
 
 import nl.ramsolutions.sw.checks.MagikCheckList;
 import nl.ramsolutions.sw.sonar.language.MagikLanguage;
-import org.sonar.api.server.profile.BuiltInQualityProfilesDefinition;
-import org.sonarsource.analyzer.commons.BuiltInQualityProfileJsonLoader;
 
 /** Magik Sonar Way profile. */
-public final class MagikSonarWayProfile implements BuiltInQualityProfilesDefinition {
+public final class MagikSonarWayProfile extends AbstractMagikSonarWayProfile {
 
-  private static final String PROFILE_NAME = "Sonar way";
   private static final String PROFILE_LOCATION =
       MagikCheckList.PROFILE_DIR + "/Sonar_way_profile.json";
 
   @Override
-  public void define(final Context context) {
-    final NewBuiltInQualityProfile profile =
-        context.createBuiltInQualityProfile(PROFILE_NAME, MagikLanguage.KEY);
-    BuiltInQualityProfileJsonLoader.load(
-        profile, MagikCheckList.REPOSITORY_KEY, MagikSonarWayProfile.PROFILE_LOCATION);
-    profile.done();
+  protected String languageKey() {
+    return MagikLanguage.KEY;
+  }
+
+  @Override
+  protected String repositoryKey() {
+    return MagikCheckList.REPOSITORY_KEY;
+  }
+
+  @Override
+  protected String profileLocation() {
+    return MagikSonarWayProfile.PROFILE_LOCATION;
   }
 }

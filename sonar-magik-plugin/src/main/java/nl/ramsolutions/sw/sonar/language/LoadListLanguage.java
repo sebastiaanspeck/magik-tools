@@ -12,7 +12,7 @@ public class LoadListLanguage extends AbstractLanguage {
   public static final String KEY = "load_list";
 
   /** Name for language. */
-  public static final String NAME = "Load List";
+  public static final String NAME = "Magik Load List";
 
   /** Category for language. */
   public static final String LOAD_LIST_CATEGORY = "load_list";
