@@ -24,6 +24,7 @@ import nl.ramsolutions.sw.SourceFileScanner;
 import nl.ramsolutions.sw.checks.Check;
 import nl.ramsolutions.sw.checks.CheckHolder;
 import nl.ramsolutions.sw.checks.ChecksConfiguration;
+import nl.ramsolutions.sw.checks.LoadListCheckList;
 import nl.ramsolutions.sw.checks.MagikCheckList;
 import nl.ramsolutions.sw.checks.ModuleDefCheckList;
 import nl.ramsolutions.sw.checks.ProductDefCheckList;
@@ -91,6 +92,16 @@ public final class Main {
           .hasArg()
           .type(PatternOptionBuilder.STRING_VALUE)
           .get();
+  private static final Option OPTION_GENERATE_RCFILE =
+      Option.builder()
+          .longOpt("generate-rcfile")
+          .desc(
+              "Generate a magik-lint.properties file at the given path from one or more "
+                  + "SonarQube quality profile backup XML files (given as extra arguments), "
+                  + "and exit")
+          .hasArg()
+          .type(PatternOptionBuilder.FILE_VALUE)
+          .get();
 
   static {
     ReporterRegistry.register(
@@ -121,6 +132,7 @@ public final class Main {
     OPTIONS.addOption(OPTION_VERSION);
     OPTIONS.addOption(OPTION_APPLY_FIXES);
     OPTIONS.addOption(OPTION_FORMAT);
+    OPTIONS.addOption(OPTION_GENERATE_RCFILE);
   }
 
   private static final Map<String, Integer> SEVERITY_EXIT_CODE_MAPPING =
@@ -222,6 +234,48 @@ public final class Main {
         .toList();
   }
 
+  /**
+   * If {@code --generate-rcfile} was given, generate a magik-lint.properties file from one or more
+   * SonarQube quality profile backup XML files (the remaining command line arguments), write it to
+   * the given output path, and exit. Otherwise, do nothing.
+   *
+   * @param commandLine Parsed command line.
+   * @throws IOException -
+   * @throws ParseException -
+   */
+  private static void handleGenerateRcFile(final CommandLine commandLine)
+      throws IOException, ParseException {
+    if (!commandLine.hasOption(OPTION_GENERATE_RCFILE)) {
+      return;
+    }
+
+    final File outputFile = (File) commandLine.getParsedOptionValue(OPTION_GENERATE_RCFILE);
+    final String[] profilePaths = commandLine.getArgs();
+
+    final List<ActiveRule> activeRules = new ArrayList<>();
+    for (final String profilePath : profilePaths) {
+      final Path xmlPath = Path.of(profilePath);
+      activeRules.addAll(QualityProfileImporter.parse(xmlPath));
+    }
+
+    // --generate-rcfile also covers load_list.txt/patch_list.txt checks, unlike
+    // Main.getAllCheckClasses() (used for linting/show-checks), so include those here too.
+    final List<Class<? extends Check>> checks =
+        Stream.concat(
+                Main.getAllCheckClasses().stream(),
+                LoadListCheckList.INSTANCE.getBaseChecks().stream())
+            .sorted(Comparator.comparing(Class::getSimpleName))
+            .toList();
+    final String contents = RcFileGenerator.generate(checks, activeRules);
+    final Path outputPath = outputFile.toPath();
+    Files.writeString(outputPath, contents);
+
+    final PrintStream outStream = Main.getOutStream();
+    outStream.println("Wrote " + outputPath);
+
+    System.exit(0);
+  }
+
   private static Collection<Path> getFilesFromArgs(final String[] args) throws IOException {
     final Collection<Path> paths = new ArrayList<>();
 
@@ -278,6 +332,9 @@ public final class Main {
 
       System.exit(0);
     }
+
+    // Generate rcfile from SonarQube quality profile(s).
+    Main.handleGenerateRcFile(commandLine);
 
     // Read configuration.
     final MagikToolsProperties properties;

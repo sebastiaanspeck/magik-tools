@@ -9,6 +9,7 @@ Magik-lint takes the following command line options:
 - `--apply-fixes`: Automatically apply fixes, when possible.
 - `--column-offset`: Column offset, in case your editor uses a different column numbering scheme.
 - `--debug`: Enable debug logging.
+- `--generate-rcfile`: Generate a configuration file, see [Generating a configuration file from SonarQube](#generating-a-configuration-file-from-sonarqube).
 - `--help`: Show help.
 - `--max-infractions`: Maximum number of issues to report.
 - `--msg-template`: Template for output, defaults to: `${path}:${line}:${column}: ${msg} (${symbol})`
@@ -107,6 +108,26 @@ You can configure the `line-length` check to allow up to 120 characters per line
 
 ```text
 line-length.max-line-length=120
+```
+
+### Generating a configuration file from SonarQube
+
+Magik-lint has no notion of "language": Magik, product.def, module.def, and load_list.txt/patch_list.txt
+checks all share a single `enabled`/`disabled` namespace in the configuration file. The SonarQube plugin,
+on the other hand, requires one quality profile per SonarQube language (`Magik`, `Magik Product/Module
+Definition`, `Magik Load List`), since SonarQube differentiates languages by file suffix.
+
+To keep both in sync, `--generate-rcfile` builds a `magik-lint.properties` file from one or more
+SonarQube quality profile backup XML files (obtained via a quality profile's "Back up" action, or
+`api/qualityprofiles/backup`). Any check absent from every given profile is added to `disabled`; a check
+active in a profile but disabled by default in code is added to `enabled`; non-default rule parameters are
+carried over.
+
+Pass the output path, followed by one XML file per profile you want to combine:
+
+```shell
+java -jar magik-lint.jar --generate-rcfile magik-lint.properties \
+    magik-profile.xml product-module-def-profile.xml load-list-profile.xml
 ```
 
 ## Exit codes

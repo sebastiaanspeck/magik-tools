@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+  <name>Test Profile</name>
+  <language>magik</language>
+  <rules>
+    <rule>
+      <repositoryKey>magik</repositoryKey>
+      <key>LineLength</key>
+      <type>CODE_SMELL</type>
+      <priority>MINOR</priority>
+      <parameters>
+        <parameter><key>max line length</key><value>120</value></parameter>
+        <parameter><key>tab width</key><value>8</value></parameter>
+      </parameters>
+    </rule>
+    <rule>
+      <repositoryKey>magik</repositoryKey>
+      <key>SyntaxError</key>
+      <type>BUG</type>
+      <priority>MAJOR</priority>
+      <parameters></parameters>
+    </rule>
+  </rules>
+</profile>

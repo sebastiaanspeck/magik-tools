@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<profile>
+  <name>Test Profile</name>
+  <language>product_module_def</language>
+  <rules>
+    <rule>
+      <repositoryKey>product_module_def</repositoryKey>
+      <key>ProductDefSyntaxError</key>
+      <type>BUG</type>
+      <priority>MAJOR</priority>
+      <parameters></parameters>
+    </rule>
+    <rule>
+      <repositoryKey>product_module_def</repositoryKey>
+      <key>ModuleDefSyntaxError</key>
+      <type>BUG</type>
+      <priority>MAJOR</priority>
+      <parameters></parameters>
+    </rule>
+  </rules>
+</profile>
