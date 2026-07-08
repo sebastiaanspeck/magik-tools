@@ -85,7 +85,7 @@ jobs:
         run: gh release delete "$VERSION" --yes --cleanup-tag 2>/dev/null || true
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ env.VERSION }}
           name: ${{ env.VERSION }}
