@@ -25,6 +25,28 @@ class GetGlobalValueUnsetCheckTest {
         _endif
         """,
         "get_global_value(:var).run()",
+        """
+        _if (foo << get_global_value(:var)) _is _unset
+        _then
+            condition.raise(:error, :format_args, {"missing"})
+        _endif
+        foo.run()
+        """,
+        """
+        _if (foo << sw:get_global_value(:var)) _is _unset
+        _then
+            _return
+        _endif
+        foo.run()
+        """,
+        """
+        exemplar_global << get_global_value(:var)
+        _if exemplar_global _is _unset
+        _then
+            condition.raise(:no_spec_loaded, :spec, :var.print_string)
+        _endif
+        >> exemplar_global
+        """,
       })
   void testValid(final String code) {
     final MagikCheck check = new GetGlobalValueUnsetCheck();
@@ -38,12 +60,6 @@ class GetGlobalValueUnsetCheckTest {
         _if (foo << get_global_value(:var)) _isnt _unset
         _then
             foo.run()
-        _endif
-        """,
-        """
-        _if (foo << sw:get_global_value(:var)) _is _unset
-        _then
-            _return
         _endif
         """,
         """
@@ -66,6 +82,22 @@ class GetGlobalValueUnsetCheckTest {
         _then
             foo.run()
         _endif
+        """,
+        """
+        _if (foo << get_global_value(:var)) _isnt _unset
+        _then
+            foo.run()
+        _else
+            condition.raise(:error, :format_args, {"missing"})
+        _endif
+        """,
+        """
+        exemplar_global << get_global_value(:var)
+        _if exemplar_global _isnt _unset
+        _then
+            condition.raise(:no_spec_loaded, :spec, :var.print_string)
+        _endif
+        >> exemplar_global
         """,
       })
   void testInvalid(final String code) {

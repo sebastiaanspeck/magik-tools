@@ -1,8 +1,13 @@
 <p>
-Testing the result of <code>get_global_value()</code> against <code>_unset</code> silently
-swallows the case where the global does not exist, instead of failing loudly. This is
-sometimes used as a hack to work around module load-order issues, but it hides real bugs
-when the global is missing for another reason.
+Guarding <code>get_global_value()</code> with <code>_isnt _unset</code> silently swallows
+the case where the global does not exist, instead of failing loudly. This is sometimes used
+as a hack to work around module load-order issues, but it hides real bugs when the global is
+missing for another reason.
+</p>
+<p>
+Only the <code>_isnt _unset</code> form is flagged. <code>_is _unset</code> is not, since
+that branch may already fail loudly (e.g. by raising a condition) and this check cannot
+know how it is handled.
 </p>
 <h2>Non-compliant Code Example</h2>
 <pre data-diff-id="1" data-diff-type="noncompliant">
