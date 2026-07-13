@@ -1,12 +1,44 @@
 <p>Abstract method not implemented</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>When a class inherits an abstract method but does not implement it, calling that method through an instance of the class results in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+def_slotted_exemplar(
+    :parent,
+    {})
+
 _abstract _method parent.do_something()
-    ## @return {integer}
+    ## @return {sw:integer}
 _endmethod
+
+def_slotted_exemplar(
+    :child,
+    {},
+    :parent)
 
 _method child.other_method()
     _return 1
 _endmethod
 </pre>
-<p>In the above example, <code>child</code> inherits from <code>parent</code> which defines an abstract method <code>do_something()</code>. Since <code>child</code> does not implement this method, calling it will result in a runtime error.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+def_slotted_exemplar(
+    :parent,
+    {})
+
+_abstract _method parent.do_something()
+    ## @return {sw:integer}
+_endmethod
+
+def_slotted_exemplar(
+    :child,
+    {},
+    :parent)
+
+_method child.do_something()
+    ## @return {sw:integer}
+    _return 1
+_endmethod
+</pre>
+<p><code>child</code> now implements the abstract method it inherited from <code>parent</code>.</p>

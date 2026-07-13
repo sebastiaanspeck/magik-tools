@@ -1,8 +1,16 @@
 <p>Multiple assignment count mismatch</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>When a multiple assignment has more target variables than the expression returns values, the extra variables silently receive <code>_unset</code> instead of raising an error, which can hide a bug.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.b
     (x, y, z) &lt;&lt; (1, 2)
 _endmethod
 </pre>
-<p>In the above example, three variables are assigned from an expression that returns only two values. The third variable <code>z</code> will silently receive <code>_unset</code>.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method a.b
+    (x, y, z) &lt;&lt; (1, 2, 3)
+_endmethod
+</pre>

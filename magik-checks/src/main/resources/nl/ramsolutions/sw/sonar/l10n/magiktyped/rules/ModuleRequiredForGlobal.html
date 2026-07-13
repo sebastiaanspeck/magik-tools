@@ -1,6 +1,9 @@
 <p>Module required for used global</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>A global supplied by another module is only guaranteed to be loaded if the current module requires that module. Without the <code>requires</code> entry, the global may not exist yet at runtime, depending on load order.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 # Inside a module which does NOT require the appropriate module to get
 # the test_exemplar_from_another_module global variable.
 _block
@@ -8,4 +11,12 @@ _block
 _endblock
 $
 </pre>
-<p>This will raise an issue, because the <code>test_exemplar_from_another_module</code> might not be loaded, as the module containing this example code does not require the module which supplies the <code>test_exemplar_from_another_module</code>.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+# Inside a module which requires the appropriate module to get
+# the test_exemplar_from_another_module global variable.
+_block
+    _local var << test_exemplar_from_another_module
+_endblock
+$
+</pre>

@@ -1,1 +1,13 @@
 <p>Product name does not match the directory name.</p>
+<h2>Why is this an issue?</h2>
+<p>Tooling that locates a product by its directory expects the declared name to match. A mismatch can make the product harder to find, or cause inconsistent behavior between tools that look it up by name versus by directory.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<p>Given a product in a directory named <code>example_product</code>:</p>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+different_name layered_product
+</pre>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+example_product layered_product
+</pre>

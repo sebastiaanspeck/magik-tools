@@ -1,5 +1,8 @@
 <p>Block is empty and can be removed.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>An empty block does nothing, so its presence usually means the intended implementation was never written, or was removed during a refactor and the empty shell was left behind. Either way it adds noise without a purpose.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _if a
 _then
@@ -8,7 +11,7 @@ _else
   # block without any contents
 _endif
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _if a
 _then

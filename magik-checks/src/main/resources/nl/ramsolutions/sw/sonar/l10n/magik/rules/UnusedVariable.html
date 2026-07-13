@@ -1,19 +1,22 @@
+<p>Unused local variables and parameters should be removed.</p>
+<h2>Why is this an issue?</h2>
 <p>If a local variable is declared but not used, it is dead code and should be removed. Doing so will improve maintainability as developers will not wonder what the variable is used for.</p>
-<h2>Non-compliant Code Example</h2>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method exemplar.hello(name)
   _local message << "Hello " + name  # message is an unused variable
   print("Hello " + name)
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method exemplar.hello(name)
   _local message << "Hello " + name
   print(message)
 _endmethod
 </pre>
-<h2>Non-compliant Code Example</h2>
+<h4>Non-compliant code example</h4>
 <p>If you have enabled checking the parameters as well, you should use all parameters as well.</p>
 <pre data-diff-id="2" data-diff-type="noncompliant">
 _method exemplar.hello(name) # name is an unused parameter
@@ -21,7 +24,7 @@ _method exemplar.hello(name) # name is an unused parameter
   print(message)
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="2" data-diff-type="compliant">
 _method exemplar.hello(name)
   _local message << "Hello " + name

@@ -1,10 +1,20 @@
 <p>Global exists</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Referring to a global that does not exist will result in a runtime error as soon as that code path is executed.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _block
     # non_existing_exemplar is a non-existing global/exemplar.
     _local var << non_existing_exemplar.new()
 _endblock
 $
 </pre>
-<p>The global <code>non_existing_exemplar</code> in the example above does not exist.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_block
+    _local var << rope.new()
+_endblock
+$
+</pre>
+<p><code>rope</code> is an existing global.</p>

@@ -1,9 +1,18 @@
 <p>Unary operator type mismatch</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>A unary operator such as <code>+</code> maps to a method (e.g. <code>unary_plus</code>). When that method is not defined for the operand's type, applying the operator results in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.b
     _local x &lt;&lt; :symbol
     _local y &lt;&lt; +x
 _endmethod
 </pre>
-<p>In the above example, <code>+x</code> maps to the unary method <code>unary_plus</code>. When that method is not available for <code>sw:symbol</code>, the result type is undefined and can cause runtime failures.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method a.b
+    _local x &lt;&lt; 1
+    _local y &lt;&lt; +x
+_endmethod
+</pre>

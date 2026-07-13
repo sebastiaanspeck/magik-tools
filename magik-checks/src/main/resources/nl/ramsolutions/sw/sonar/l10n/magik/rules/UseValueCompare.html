@@ -1,9 +1,12 @@
 <p>Compare strings, bignums, and floats with the equality-operators, instead of the <code>_is</code>/<code>_isnt</code> operators.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p><code>_is</code>/<code>_isnt</code> compare object identity, while <code>=</code>/<code>~=</code> compare value. Two strings, bignums, or floats can hold the same value while being different objects, so <code>_is</code> can incorrectly report them as unequal even though <code>=</code> would consider them the same.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 a _is "test"
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 a = "test"
 </pre>

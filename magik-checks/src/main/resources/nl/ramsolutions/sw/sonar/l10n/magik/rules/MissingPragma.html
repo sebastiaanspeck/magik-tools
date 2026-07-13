@@ -1,10 +1,13 @@
 <p>Definition is missing a pragma declaration.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A pragma declares metadata about a definition, such as its <code>classify_level</code>, <code>topic</code>, and intended <code>usage</code> (e.g. whether it may be redefined or subclassed). Without it, tooling such as method_finder cannot classify the definition, and its intended usage towards other developers is undocumented.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method object.do_something(param1)
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _pragma(classify_level=basic, topic={example}, usage=redefinable)
 _method object.do_something(param1)

@@ -1,4 +1,7 @@
 <p>Pragma does not contain the module name in the topics.</p>
+<h2>Why is this an issue?</h2>
+<p>Pragma topics are used by tooling, such as method_finder, to classify and filter definitions. When a definition's topics do not include the name of the module it lives in, that definition will not be found when filtering by that module, making it harder to discover.</p>
+<h3>Code examples</h3>
 <p>Given the next <code>module.def</code>:</p>
 <pre>
 example_module	1
@@ -7,13 +10,13 @@ description
 	Example module
 end
 </pre>
-<h2>Non-compliant Code Example</h2>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _pragma(classify_level=basic, topic={something_else})
 def_slotted_exemplar(:example, {})
 $
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _pragma(classify_level=basic, topic={something_else, example_module})
 def_slotted_exemplar(:example, {})

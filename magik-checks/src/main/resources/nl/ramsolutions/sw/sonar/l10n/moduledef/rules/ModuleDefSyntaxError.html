@@ -1,5 +1,8 @@
 <p>module.def contains a syntax error.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A module.def that does not parse cannot be loaded, so the module, and anything that depends on it, will fail to load until the syntax error is fixed.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 example_module 1
 
@@ -7,11 +10,11 @@ titles
     An example module
 end
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 example_module 1
 
-title
+description
     An example module
 end
 </pre>

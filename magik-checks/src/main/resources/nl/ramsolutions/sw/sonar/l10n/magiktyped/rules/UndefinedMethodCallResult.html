@@ -1,9 +1,35 @@
 <p>Undefined method call result</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>When a called method's return type is unknown, the type checker cannot verify how the result is subsequently used, which can hide type mismatches later in the code. Add <code>@return</code> type-doc to the method, or to the type database, to make this checkable.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+def_slotted_exemplar(
+    :example_exemplar,
+    {})
+
+_method example_exemplar.undefined_method_call_result_example()
+    _return unknown_exemplar.unknown_method()
+_endmethod
+
 _block
     _local var << example_exemplar.undefined_method_call_result_example()
 _endblock
 $
 </pre>
-<p>The example shows a call to a method for which the return types in the type-doc has not been defined. Add type-doc with the appropriate <code>@return</code>s to the method, or the type database.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+def_slotted_exemplar(
+    :example_exemplar,
+    {})
+
+_method example_exemplar.documented_method_call_result_example()
+    ## @return {sw:integer} Result.
+    _return 1
+_endmethod
+
+_block
+    _local var << example_exemplar.documented_method_call_result_example()
+_endblock
+$
+</pre>

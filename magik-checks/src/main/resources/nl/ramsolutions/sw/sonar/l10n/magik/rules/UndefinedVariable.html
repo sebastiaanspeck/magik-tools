@@ -1,11 +1,14 @@
-<p>The prefixed variable indicates it should have been declared in the local scope, but was used as a global.</p>
-<h2>Non-compliant Code Example</h2>
+<p>A prefixed variable is used without being declared in the local scope.</p>
+<h2>Why is this an issue?</h2>
+<p>By convention, an identifier prefixed with <code>l_</code>, <code>i_</code>, <code>p_</code>, or <code>c_</code> signals that it is meant to be a local, iterator, parameter, or constant variable. When such a name is not actually declared in the local scope, Magik resolves it as a global instead, usually because a <code>_local</code> declaration is missing, and referring to an undeclared global is often a bug.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method object.do_something()
   write(l_a)
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method object.do_something()
   _local l_a << 10

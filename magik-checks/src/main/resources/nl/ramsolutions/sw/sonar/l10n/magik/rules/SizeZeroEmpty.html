@@ -1,9 +1,12 @@
-<p>Use the method <code>empty?</code>, instead of checking for size equals to 0. The method <code>empty?</code> is faster.</p>
-<h2>Non-compliant Code Example</h2>
+<p>Use the method <code>empty?</code>, instead of checking for size equals to 0.</p>
+<h2>Why is this an issue?</h2>
+<p>The method <code>empty?</code> is faster than computing the size and comparing it to zero, and its name states the intent directly.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 a.size = 0
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 a.empty?
 </pre>

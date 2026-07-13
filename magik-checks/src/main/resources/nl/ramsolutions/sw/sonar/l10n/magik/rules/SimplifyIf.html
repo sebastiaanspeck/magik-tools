@@ -1,23 +1,26 @@
 <p>This if-statement can be simplified.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A <code>_then</code>/<code>_else</code>-nested <code>_if</code> that only contains another <code>_if</code> can be flattened using <code>_elif</code>, which reads more clearly and reduces the nesting a reader has to track mentally.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _if a
 _then
-  ...
+  write(1)
 _else
   _if b
   _then
-    ...
+    write(2)
   _endif
 _endif
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _if a
 _then
-  ...
+  write(1)
 _elif b
 _then
-  ...
+  write(2)
 _endif
 </pre>

@@ -1,5 +1,8 @@
 <p>Variable definition hides another variable with the same name.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A variable definition that reuses the name of a variable already visible in an enclosing scope shadows the original. Code that follows can end up reading or writing the wrong one, and the mistake is easy to miss since both variables share the same name.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre>
 _local x << 10
 _for i _over 1.upto(10)

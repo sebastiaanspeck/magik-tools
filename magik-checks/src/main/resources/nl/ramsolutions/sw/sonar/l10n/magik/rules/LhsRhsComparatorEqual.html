@@ -1,5 +1,8 @@
 <p>If the left hand side and right hand side of a comparison are the same, the result is always true.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A comparison where both sides are the same expression always evaluates to the same result, so it adds no real logic and usually indicates a typo, such as comparing a variable to itself instead of to the value that was intended.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre>
 _if "abc" = "abc"
 _then

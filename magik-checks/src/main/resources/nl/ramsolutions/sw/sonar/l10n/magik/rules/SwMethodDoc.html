@@ -1,18 +1,21 @@
 <p>Method is missing documentation.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>Method documentation explains what a method does, its parameters, and what it returns, for readers and documentation tooling. Without it, developers have to read the implementation to understand how to use the method safely.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method object.do_something(param1)
   ## This method does something.
   ## Then it returns _true.
-  return _true
+  _return _true
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method object.do_something(param1)
   ## This method does something with PARAM1.
   ## Then it returns _true.
-  return _true
+  _return _true
 _endmethod
 </pre>
 <p>Note that parameters must occur in uppercase in the method documentation.</p>

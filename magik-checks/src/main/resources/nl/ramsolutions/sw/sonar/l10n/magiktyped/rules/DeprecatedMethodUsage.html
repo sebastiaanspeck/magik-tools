@@ -1,6 +1,13 @@
 <p>Deprecated method usage</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>A method marked with <code>_pragma(classify_level=deprecated)</code> is intended to be removed or replaced. Calling it risks breaking when the deprecated method is eventually removed, and usually means a newer alternative should be used instead.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+def_slotted_exemplar(
+    :exemplar,
+    {})
+
 _pragma(classify_level=deprecated)
 _method exemplar.example_method()
 _endmethod
@@ -12,4 +19,20 @@ _block
 _endblock
 $
 </pre>
-<p>In the example above, the method call <code>exem.example_method()</code> is marked as deprecated using the <code>_pragma(classify_level=deprecated)</code> directive.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+def_slotted_exemplar(
+    :exemplar,
+    {})
+
+_method exemplar.example_method()
+_endmethod
+$
+
+_block
+    _local exem << exemplar
+    exem.example_method()
+_endblock
+$
+</pre>
+<p>Without the <code>_pragma(classify_level=deprecated)</code> directive, calling <code>example_method()</code> no longer raises an issue.</p>

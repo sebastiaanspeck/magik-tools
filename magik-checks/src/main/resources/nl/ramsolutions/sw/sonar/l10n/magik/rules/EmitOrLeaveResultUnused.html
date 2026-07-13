@@ -1,8 +1,10 @@
 <p>The result of an emit or <code>_leave _with</code> statement is discarded.</p>
+<h2>Why is this an issue?</h2>
 <p>An emit (<code>>></code>) or <code>_leave _with val</code> statement produces a value, but the value is discarded because the containing construct is used as a standalone statement rather than an expression.</p>
 <p><code>>></code> emits a value from the current scope to the parent scope. If that scope is a control structure used as a statement, the emitted value is discarded.</p>
 <p><code>_leave _with val</code> provides a value from a loop or block expression. If the loop or block is a standalone statement, the value is discarded.</p>
-<h2>Non-compliant Code Example</h2>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.b
   _if condition?
@@ -15,7 +17,7 @@ _method a.b
   _loop _leave _with 42 _endloop  # Result discarded
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method a.b
   >> _if condition?

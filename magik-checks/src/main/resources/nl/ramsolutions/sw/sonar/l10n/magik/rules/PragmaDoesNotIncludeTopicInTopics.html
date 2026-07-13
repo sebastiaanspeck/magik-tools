@@ -1,13 +1,16 @@
 <p>Pragma topic does not contain all the required configured topics.</p>
+<h2>Why is this an issue?</h2>
+<p>Pragma topics are used by tooling, such as method_finder, to classify and filter definitions. A project can configure this check to require one or more specific topics on every definition, enforcing its own classification scheme. When a definition is missing a required topic, it will not be found when filtering by that topic, making it harder to discover.</p>
+<h3>Code examples</h3>
 <p>Given the next configuration:</p>
 <code>pragma-does-not-include-topic-in-topics.topics=magik</code>
-<h2>Non-compliant Code Example</h2>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _pragma(classify_level=basic, topic={something_else})
 def_slotted_exemplar(:example, {})
 $
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _pragma(classify_level=basic, topic={something_else, magik})
 def_slotted_exemplar(:example, {})

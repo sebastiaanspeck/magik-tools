@@ -1,12 +1,14 @@
 <p>No self usage.</p>
-<p>When <code>_self</code> is not used, should this actually be a method? This <i>might</i> incidate a design issue, although this not always have to be the case.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>When <code>_self</code> is not used, should this actually be a method? This <i>might</i> indicate a design issue, although this does not always have to be the case.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method exemplar.write_info()
   write("This is info about me")
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method exemplar.write_info()
   write("This is: ", _self)

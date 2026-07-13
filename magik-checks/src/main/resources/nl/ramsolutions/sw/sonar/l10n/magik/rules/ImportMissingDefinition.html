@@ -1,5 +1,8 @@
 <p>Import missing definition.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>An <code>_import</code>ed name must already exist in an enclosing scope; the statement makes that outer variable available inside the nested procedure, it does not create a new one. Importing a name that is not defined anywhere outside is a typo or leftover from refactoring, and fails or misbehaves at runtime.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre>
 _method exemplar.method
   _proc@nested_proc()

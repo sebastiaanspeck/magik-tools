@@ -1,2 +1,17 @@
-<p>File should be in the load_list.
+<p>File should be in the load_list.</p>
+<h2>Why is this an issue?</h2>
 <p>If the file is a utility, to be loaded later on, move it to another directory.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<p>Given a directory containing <code>file1.magik</code>, <code>file2.magik</code>, and <code>file3.magik</code>:</p>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+file1.magik
+file2.magik
+</pre>
+<p><code>file3.magik</code> exists on disk but is not listed in <code>load_list.txt</code>, so it will not be loaded.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+file1.magik
+file2.magik
+file3.magik
+</pre>

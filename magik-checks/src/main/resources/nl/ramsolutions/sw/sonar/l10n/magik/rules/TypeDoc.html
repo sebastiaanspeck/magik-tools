@@ -1,6 +1,8 @@
 <p>Method/procedure/slotted exemplar is missing documentation.</p>
-<p>For more information on how to write good TypeDoc, view the <a href="https://github.com/stevenlooman/magik-tools/wiki/Magik-typing">Wiki</a>.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>Free-text comments describing parameters, return values, and slots cannot be interpreted by tooling, and tend to go stale as code changes. <code>@param</code>, <code>@return</code>, <code>@slot</code>, and <code>@loop</code> annotations give the same information in a form the type checker can verify, so mismatches between what a method documents and what it actually does are caught during linting instead of at runtime.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method object.do_something(param1)
   ## This method does something.
@@ -8,7 +10,7 @@ _method object.do_something(param1)
   _return _true
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method object.do_something(param1)
   ## This method does something.
@@ -17,7 +19,7 @@ _method object.do_something(param1)
   _return _true
 _endmethod
 </pre>
-<h2>Non-compliant Code Example</h2>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="2" data-diff-type="noncompliant">
 def_slotted_exemplar(
   :test_exemplar,
@@ -25,7 +27,7 @@ def_slotted_exemplar(
     {:slot1, _unset}
   })
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="2" data-diff-type="compliant">
 ## @slot {sw:rope} slot1 Slot 1.
 def_slotted_exemplar(
@@ -34,3 +36,5 @@ def_slotted_exemplar(
     {:slot1, _unset}
   })
 </pre>
+<h2>Resources</h2>
+<p>For more information on how to write good TypeDoc, view the <a href="https://github.com/stevenlooman/magik-tools/wiki/Magik-typing">Wiki</a>.</p>

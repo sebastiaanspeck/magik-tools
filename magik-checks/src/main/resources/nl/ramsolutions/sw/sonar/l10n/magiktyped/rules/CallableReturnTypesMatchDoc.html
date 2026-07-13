@@ -1,5 +1,5 @@
 <p>Callable return types match doc</p>
-<h2>Explanation</h2>
+<h2>Why is this an issue?</h2>
 <p>Verifies that the <code>@return</code> type annotations in a callable's documentation match its
 reasoned return types. Issues are raised in the following situations:</p>
 <ul>
@@ -13,8 +13,8 @@ reasoned return types. Issues are raised in the following situations:</p>
 </ul>
 <p>Return values whose type is unknown (e.g. from an unresolved method call) are skipped for
 mismatch reporting; those are covered by <em>UndefinedMethodCallResultTypedCheck</em>.</p>
-<h2>Examples</h2>
-<h3>Type mismatch</h3>
+<h3>Code examples</h3>
+<h4>Type mismatch</h4>
 <pre>
 _method example_exemplar.example_method()
     ## @return {sw:integer} Returned value.
@@ -23,14 +23,14 @@ _endmethod
 </pre>
 <p>Raises an issue because the callable is documented to return <code>sw:integer</code> but
 actually returns <code>sw:symbol</code>.</p>
-<h3>Missing @return</h3>
+<h4>Missing @return</h4>
 <pre>
 _method example_exemplar.example_method()
     _return 42
 _endmethod
 </pre>
 <p>Raises an issue because the callable returns a value but has no <code>@return</code> annotation.</p>
-<h3>Unverifiable @return</h3>
+<h4>Unverifiable @return</h4>
 <pre>
 _method example_exemplar.example_method()
     ## @return {sw:integer} Returned value.

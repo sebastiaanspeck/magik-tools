@@ -1,2 +1,49 @@
 <p>Files should not contain too many methods.</p>
+<h2>Why is this an issue?</h2>
 <p>Too many methods in a file is an indication that the unit is too complex. Consider breaking up the unit.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.method_1()
+_endmethod
+
+_method exemplar.method_2()
+_endmethod
+
+_method exemplar.method_3()
+_endmethod
+
+_method exemplar.method_4()
+_endmethod
+
+_method exemplar.method_5()
+_endmethod
+
+_method exemplar.method_6()
+_endmethod
+
+_method exemplar.method_7()
+_endmethod
+
+_method exemplar.method_8()
+_endmethod
+
+_method exemplar.method_9()
+_endmethod
+
+_method exemplar.method_10()
+_endmethod
+
+_method exemplar.method_11()
+_endmethod
+</pre>
+<p>This file defines 11 methods, exceeding the default maximum of 10.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.method_1()
+_endmethod
+
+_method exemplar.method_2()
+_endmethod
+</pre>
+<p>The remaining methods are moved to another file, grouped by responsibility.</p>

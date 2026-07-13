@@ -1,10 +1,20 @@
 <p>Binary operator type mismatch</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Applying a binary operator to a combination of types that does not define it, such as <code>+</code> between <code>sw:symbol</code> and <code>sw:integer</code>, is not a defined operation and results in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.b
     _local x &lt;&lt; :symbol
     _local y &lt;&lt; :symbol + 1
     x +&lt;&lt; 1
 _endmethod
 </pre>
-<p>In the above example, both <code>:symbol + 1</code> and <code>x +&lt;&lt; 1</code> apply <code>+</code> to <code>sw:symbol</code> and <code>sw:integer</code>, which is not a defined binary operation. This will result in a runtime error.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method a.b
+    _local x &lt;&lt; 1
+    _local y &lt;&lt; x + 1
+    x +&lt;&lt; 1
+_endmethod
+</pre>

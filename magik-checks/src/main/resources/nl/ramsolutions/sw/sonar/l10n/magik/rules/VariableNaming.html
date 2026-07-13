@@ -1,13 +1,20 @@
 <p>Give variable a proper descriptive name, consisting of a least 3 characters and a maximum of 32 characters (excluding prefix).</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>Short or overly long variable names make code harder to read: a name like <code>a</code> gives no clue what it holds, forcing the reader to trace its usage, while an excessively long name adds noise without adding clarity.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
-_local a << 1
-_local l_b << 1
-_local a_very_long_variable_name_that_is_not_descriptive_anymore << 1
+_method exemplar.example_method()
+    _local a << 1
+    _local l_b << 1
+    _local a_very_long_variable_name_that_is_not_descriptive_anymore << 1
+_endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
-_local count << 1
-_local index << 1
-_local total << 1
+_method exemplar.example_method()
+    _local count << 1
+    _local index << 1
+    _local total << 1
+_endmethod
 </pre>

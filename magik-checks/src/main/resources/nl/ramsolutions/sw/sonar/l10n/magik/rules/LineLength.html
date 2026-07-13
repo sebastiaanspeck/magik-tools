@@ -1,1 +1,18 @@
+<p>Lines should not be too long.</p>
+<h2>Why is this an issue?</h2>
 <p>Having to scroll horizontally makes it harder to get a quick overview and understanding of any piece of code.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.example_method()
+    _return "This is a very long line that goes on and on and on and on and on and on and well past the recommended line length limit"
+_endmethod
+</pre>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.example_method()
+    _local message << "This is a very long line that goes on and on and on and on " +
+                       "and on and on and well past the recommended line length limit"
+    _return message
+_endmethod
+</pre>
