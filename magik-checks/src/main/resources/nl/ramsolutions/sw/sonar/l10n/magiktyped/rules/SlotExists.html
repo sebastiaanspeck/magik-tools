@@ -1,6 +1,9 @@
 <p>Slot Exists</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Assigning to or reading a slot that is not defined on the exemplar will result in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 ## Example exemplar.
 def_slotted_exemplar(
         :example_exemplar,
@@ -14,4 +17,17 @@ _method example_exemplar.example_method()
 _endmethod
 $
 </pre>
-<p>In the method <code>example_exemplar.example_method()</code>, <code>slot_1</code> does not exist. Trying to use this slot will result in an error.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+## Example exemplar.
+def_slotted_exemplar(
+        :example_exemplar,
+        {
+            {:slot_a, _unset}
+        })
+
+_method example_exemplar.example_method()
+    .slot_a << 12345
+_endmethod
+$
+</pre>

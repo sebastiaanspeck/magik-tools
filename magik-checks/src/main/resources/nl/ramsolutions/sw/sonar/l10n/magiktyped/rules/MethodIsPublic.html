@@ -1,6 +1,13 @@
 <p>Method Is Public</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>A private method can only be called from within its own definition. Calling it from anywhere else results in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+def_slotted_exemplar(
+    :example_exemplar,
+    {})
+
 _private _method example_exemplar.private_example_method()
     ## Private method which cannot be called from other methods or blocks.
 _endmethod
@@ -11,4 +18,19 @@ _block
 _endblock
 $
 </pre>
-<p>The call to <code>example_exemplar.private_example_method()</code> will result in an error, because the method is private and cannot be called from outside its own definition.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+def_slotted_exemplar(
+    :example_exemplar,
+    {})
+
+_method example_exemplar.public_example_method()
+    ## Public method which can be called from other methods or blocks.
+_endmethod
+$
+
+_block
+    example_exemplar.public_example_method()
+_endblock
+$
+</pre>

@@ -1,2 +1,53 @@
 <p>The Cyclomatic Complexity of methods should not exceed a defined threshold.</p>
+<h2>Why is this an issue?</h2>
 <p>Complex code may perform poorly and can be difficult to test thoroughly.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.classify(value)
+    _if value = 1
+    _then
+        _return "one"
+    _elif value = 2
+    _then
+        _return "two"
+    _elif value = 3
+    _then
+        _return "three"
+    _elif value = 4
+    _then
+        _return "four"
+    _elif value = 5
+    _then
+        _return "five"
+    _elif value = 6
+    _then
+        _return "six"
+    _elif value = 7
+    _then
+        _return "seven"
+    _elif value = 8
+    _then
+        _return "eight"
+    _elif value = 9
+    _then
+        _return "nine"
+    _elif value = 10
+    _then
+        _return "ten"
+    _else
+        _return "unknown"
+    _endif
+_endmethod
+</pre>
+<p>This method's chain of <code>_elif</code> branches pushes its cyclomatic complexity past the default maximum of 10.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.classify(value)
+    _local names << property_list.new_with(
+        1, "one", 2, "two", 3, "three", 4, "four", 5, "five",
+        6, "six", 7, "seven", 8, "eight", 9, "nine", 10, "ten")
+    _return names[value]
+_endmethod
+</pre>
+<p>A lookup table replaces the branch chain with a single decision, keeping complexity low.</p>

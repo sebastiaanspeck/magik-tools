@@ -1,1 +1,53 @@
 <p>Method/procedure is too long.</p>
+<h2>Why is this an issue?</h2>
+<p>A long method usually does more than one thing, which makes it harder to understand, test, and safely change. Splitting it into smaller, well-named methods clarifies each responsibility.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.example_method()
+    step_1()
+    step_2()
+    step_3()
+    step_4()
+    step_5()
+    step_6()
+    step_7()
+    step_8()
+    step_9()
+    step_10()
+    step_11()
+    step_12()
+    step_13()
+    step_14()
+    step_15()
+    step_16()
+    step_17()
+    step_18()
+    step_19()
+    step_20()
+    step_21()
+    step_22()
+    step_23()
+    step_24()
+    step_25()
+    step_26()
+    step_27()
+    step_28()
+    step_29()
+    step_30()
+    step_31()
+    step_32()
+    step_33()
+    step_34()
+    step_35()
+    step_36()
+_endmethod
+</pre>
+<p>This method's body spans 36 lines, exceeding the default maximum of 35.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.example_method()
+    _return self.step_1() + self.step_2()
+_endmethod
+</pre>
+<p>The logic is split into smaller, well-named helper methods.</p>

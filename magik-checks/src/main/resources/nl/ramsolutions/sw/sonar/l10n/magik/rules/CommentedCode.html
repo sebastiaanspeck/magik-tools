@@ -1,1 +1,21 @@
 <p>Commented code should be removed.</p>
+<h2>Why is this an issue?</h2>
+<p>Commented-out code adds clutter and leaves readers unsure whether it is still relevant, safe to delete, or was left by mistake. Version control already preserves the history, so it can always be recovered if needed.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.calculate_total(items)
+    # _local total << 0
+    # _for item _over items.fast_elements()
+    # _loop
+    #   total << total + item.price
+    # _endloop
+    _return items.size * 10
+_endmethod
+</pre>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.calculate_total(items)
+    _return items.size * 10
+_endmethod
+</pre>

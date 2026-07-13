@@ -1,11 +1,14 @@
 <p>Pragma contains an invalid classify_level.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>The <code>classify_level</code> controls how tooling such as method_finder groups and filters a definition (e.g. hiding advanced or deprecated definitions from a basic search). An invalid value is not recognized by that tooling, so the definition is not classified correctly.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _pragma(classify_level=invalid, topic={example}, usage=redefinable)
 _method object.do_something()
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _pragma(classify_level=basic, topic={example}, usage=redefinable)
 _method object.do_something()

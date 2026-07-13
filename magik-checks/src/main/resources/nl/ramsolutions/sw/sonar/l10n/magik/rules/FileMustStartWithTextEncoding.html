@@ -1,4 +1,5 @@
 <p>File should declare its character encoding on the first line.</p>
+<h2>Why is this an issue?</h2>
 <p>
 Magik determines a source file's character encoding from a
 <code>#% text_encoding = ...</code> comment on its first line. When it is
@@ -7,12 +8,13 @@ the locale and can mangle non-ASCII characters such as umlauts. Declaring the
 encoding on the first line makes the file decode consistently everywhere. Note
 that the comment is only honoured on the very first line.
 </p>
-<h2>Non-compliant Code Example</h2>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _package user
 _method a.foo() _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 #% text_encoding = utf8
 _package user

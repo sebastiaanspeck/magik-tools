@@ -1,7 +1,9 @@
 <p>Module already listed in <code>tests_modules</code> should not also be in <code>requires</code>.</p>
+<h2>Why is this an issue?</h2>
 <p>If a module is listed as <code>tests_modules</code>, it is already required implicitly. Adding it to <code>requires</code> is redundant.</p>
 
-<h2>Non-compliant Code Example</h2>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 example_module_tests 1
 
@@ -14,7 +16,7 @@ tests_modules
 end
 </pre>
 
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 example_module_tests 1
 

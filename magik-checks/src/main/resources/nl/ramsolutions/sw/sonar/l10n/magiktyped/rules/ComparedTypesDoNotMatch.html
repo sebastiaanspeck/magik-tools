@@ -1,6 +1,9 @@
 <p>Compared types do not match</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Comparing a value to a type it can never actually be, based on its documented type, produces a condition that can never be true, which is usually a sign the comparison, or the type documentation, does not reflect what the code is meant to check.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.m(param1)
     ## @param {sw:integer} param1
     _if param1 _is _unset
@@ -11,4 +14,15 @@ _method a.m(param1)
 _endmethod
 $
 </pre>
-<p>In the above example, we are trying to compare two different types: <code>sw:integer</code> and <code>sw:unset</code>. Given that the type definition of <code>param1</code> is <code>sw:integer</code>, it can never be <code>sw:unset</code>.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method a.m(param1)
+    ## @param {sw:integer|sw:unset} param1
+    _if param1 _is _unset
+    _then
+        # This condition can be true, since param1 may be sw:unset.
+    _endif
+_endmethod
+$
+</pre>
+<p><code>param1</code> is now documented as <code>sw:integer|sw:unset</code>, so comparing it to <code>_unset</code> is meaningful.</p>

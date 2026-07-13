@@ -1,1 +1,32 @@
 <p>Method/procedure contains too many variables.</p>
+<h2>Why is this an issue?</h2>
+<p>A method or procedure with many variables is harder to follow, since a reader has to keep track of what each one holds. It's often a sign the unit is doing too much and could be split into smaller pieces.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.example_method()
+    _local a << 1
+    _local b << 2
+    _local c << 3
+    _local d << 4
+    _local e << 5
+    _local f << 6
+    _local g << 7
+    _local h << 8
+    _local i << 9
+    _return a + b + c + d + e + f + g + h + i
+_endmethod
+</pre>
+<p>This method declares 9 local variables, exceeding the default maximum of 8.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.example_method()
+    _local values << {1, 2, 3, 4, 5, 6, 7, 8, 9}
+    _local total << 0
+    _for value _over values.fast_elements()
+    _loop
+        total << total + value
+    _endloop
+    _return total
+_endmethod
+</pre>

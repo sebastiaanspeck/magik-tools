@@ -1,5 +1,8 @@
 <p>An emit statement (<code>>></code>) inside a loop body has no effect.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>An emit only becomes the result of the block it directly belongs to. A <code>_loop</code> body's emits do not become the result of the loop itself, a loop only produces a value via <code>_leave _with</code>, so an emit inside a loop body is silently ignored.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.b
   _local loop_val &lt;&lt;
@@ -10,7 +13,7 @@ _method a.b
   show(loop_val)  # loop_val is always _unset, emits have no effect.
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method a.b
   _local loop_val &lt;&lt;

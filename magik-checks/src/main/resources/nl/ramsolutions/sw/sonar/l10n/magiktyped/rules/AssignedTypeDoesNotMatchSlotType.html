@@ -1,18 +1,35 @@
 <p>Assigned type does not match slot type</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Assigning a value to a slot whose declared type does not accept that value's type means the slot's actual contents no longer match what its documentation promises.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 ## Example exemplar.
-## @slot {sw:rope} slot_1
+## @slot {sw:integer} slot_1
 def_slotted_exemplar(
         :example_exemplar,
         {
-            {:slot_1, sw:rope}
+            {:slot_1, 0}
         })
 
 _method example_exemplar.example_method()
-    ## This assignment will raise an issue, because slot_1 is declared as sw:rope, but we are assigning an sw:integer.
+    ## This assignment will raise an issue, because slot_1 is declared as sw:integer, but we are assigning an sw:symbol.
+    .slot_1 << :a_symbol
+_endmethod
+$
+</pre>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+## Example exemplar.
+## @slot {sw:integer} slot_1
+def_slotted_exemplar(
+        :example_exemplar,
+        {
+            {:slot_1, 0}
+        })
+
+_method example_exemplar.example_method()
     .slot_1 << 12345
 _endmethod
 $
 </pre>
-<p>In the above example, in method <code>example_exemplar.example_method()</code>, we are trying to assign an integer value to a slot that is declared as a rope.</p>

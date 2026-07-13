@@ -1,4 +1,7 @@
 <p>Pragma does not contain the product name in the topics.</p>
+<h2>Why is this an issue?</h2>
+<p>Pragma topics are used by tooling, such as method_finder, to classify and filter definitions. When a definition's topics do not include the name of the product it lives in, that definition will not be found when filtering by that product, making it harder to discover.</p>
+<h3>Code examples</h3>
 <p>Given the next <code>product.def</code>:</p>
 <pre>
 example_product layered_product
@@ -7,13 +10,13 @@ description
 	Example product
 end
 </pre>
-<h2>Non-compliant Code Example</h2>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _pragma(classify_level=basic, topic={something_else})
 def_slotted_exemplar(:example, {})
 $
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _pragma(classify_level=basic, topic={something_else, example_product})
 def_slotted_exemplar(:example, {})

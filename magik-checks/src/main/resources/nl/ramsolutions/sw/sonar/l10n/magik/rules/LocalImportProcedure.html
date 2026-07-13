@@ -1,5 +1,8 @@
 <p>Possibly meant <code>_import</code> instead of <code>_local</code>.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>Declaring <code>_local</code> inside a nested procedure when a variable of the same name already exists in the enclosing scope creates a new, separate local instead of referring to the outer one. If the outer variable was the one actually meant, the nested procedure ends up reading or writing an uninitialized shadow instead.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.m()
   _local log_stream << !terminal!
@@ -9,7 +12,7 @@ _method a.m()
   _endproc
 _endmethod
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _method a.m()
   _local log_stream << !terminal!

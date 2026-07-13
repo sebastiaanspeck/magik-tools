@@ -1,6 +1,9 @@
 <p>Invocation argument count matches parameter count</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Calling a method or procedure with fewer or more arguments than it declares will result in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.m(param1, param2)
 _endmethod
 $
@@ -10,4 +13,14 @@ _block
 _endblock
 $
 </pre>
-<p>The example above shows an invocation of <code>a.m()</code>, but is missing argument <code>param2</code>.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method a.m(param1, param2)
+_endmethod
+$
+
+_block
+    a.m(1, 2)
+_endblock
+$
+</pre>

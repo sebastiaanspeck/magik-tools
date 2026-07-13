@@ -1,9 +1,18 @@
 <p>Type-doc Type Exists</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>A type referenced in a <code>@param</code>, <code>@return</code>, <code>@slot</code>, or <code>@loop</code> annotation that does not exist in the codebase cannot be resolved by the type checker, and the documentation misleads readers about what type is actually expected.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _method a.b(p1)
     ## @param {user:non_existing_exemplar} p1
     ## @return {user:non_existing_exemplar}
 _endmethod
 </pre>
-<p>This check ensures that all types referenced in type-doc comments actually exist in the codebase. In the example above, both the parameter type and return type refer to a non-existing exemplar.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method a.b(p1)
+    ## @param {sw:integer} p1
+    ## @return {sw:integer}
+_endmethod
+</pre>

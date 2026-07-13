@@ -1,5 +1,8 @@
 <p>Methods/Procedures should not have too many parameters.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A long parameter list is hard to call correctly and to read at the call site, since it's easy to mix up the order or forget an argument. It often also indicates the method is doing too much and could be split, or that the parameters belong together in their own object.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre>
 _method object.example(p1, p2, p3, p4, p5, p6, p7)
 _endmethod

@@ -1,5 +1,5 @@
 <p>Iter callable yield types match doc</p>
-<h2>Explanation</h2>
+<h2>Why is this an issue?</h2>
 <p>Verifies that the <code>@loop</code> type annotations in an iter callable's documentation match
 its reasoned <code>_loopbody</code> yield types. Issues are raised in the following situations:</p>
 <ul>
@@ -10,8 +10,8 @@ its reasoned <code>_loopbody</code> yield types. Issues are raised in the follow
 </ul>
 <p>Yield slots whose type is unknown (e.g. from an unresolved method call) are skipped for
 mismatch reporting; those are covered by <em>UndefinedMethodCallResultTypedCheck</em>.</p>
-<h2>Examples</h2>
-<h3>Type mismatch</h3>
+<h3>Code examples</h3>
+<h4>Type mismatch</h4>
 <pre>
 _iter _method example_exemplar.example_method()
     ## @loop {float}
@@ -20,7 +20,7 @@ _endmethod
 </pre>
 <p>Raises an issue because the callable is documented to yield <code>float</code> but actually
 yields <code>integer</code>.</p>
-<h3>Missing @loop</h3>
+<h4>Missing @loop</h4>
 <pre>
 _iter _method example_exemplar.example_method()
     _loopbody(1)
@@ -28,7 +28,7 @@ _endmethod
 </pre>
 <p>Raises an issue because the iter callable yields a value but has no <code>@loop</code>
 annotation.</p>
-<h3>@loop on non-iter callable</h3>
+<h4>@loop on non-iter callable</h4>
 <pre>
 _method example_exemplar.example_method()
     ## @loop {integer}

@@ -1,1 +1,49 @@
 <p>The number of variables in scope is too high.</p>
+<h2>Why is this an issue?</h2>
+<p>A method or procedure with many variables in scope is harder to follow, since a reader has to keep track of what each one holds. It's often a sign the unit is doing too much and could be split into smaller pieces.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.example_method()
+    _local a1 << 1
+    _local a2 << 2
+    _local a3 << 3
+    _local a4 << 4
+    _local a5 << 5
+    _local a6 << 6
+    _local a7 << 7
+    _local a8 << 8
+    _local a9 << 9
+    _local a10 << 10
+    _local a11 << 11
+    _local a12 << 12
+    _local a13 << 13
+    _for i _over 1.upto(10)
+    _loop
+        _local b1 << i + 1
+        _local b2 << i + 2
+        _local b3 << i + 3
+        _local b4 << i + 4
+        _local b5 << i + 5
+        _local b6 << i + 6
+        _local b7 << i + 7
+        _local b8 << i + 8
+        _local b9 << i + 9
+        _local b10 << i + 10
+        _local b11 << i + 11
+        _local b12 << i + 12
+        _local b13 << i + 13
+    _endloop
+_endmethod
+</pre>
+<p>Counted together, the method and its nested loop scope have 27 variables in scope, exceeding the default maximum of 25.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.example_method()
+    _for i _over 1.upto(10)
+    _loop
+        self.process_item(i)
+    _endloop
+_endmethod
+</pre>
+<p>Moving the loop body into its own method keeps the number of variables in each scope small.</p>

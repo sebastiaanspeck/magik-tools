@@ -1,5 +1,8 @@
-<p>Statements after a body-exit statement (<code>_return</code>, <code>>></code>, <code>_leave</code>, <code>_continue</code>) are never executed.</p>
-<h2>Non-compliant Code Example</h2>
+<p>Statements after a body-exit statement are never executed.</p>
+<h2>Why is this an issue?</h2>
+<p>A <code>_return</code>, <code>>></code>, <code>_leave</code>, or <code>_continue</code> immediately exits the enclosing construct, so any code written after it is unreachable dead code that can never run. It adds confusion for readers and is usually a sign that code was moved or the control flow changed without updating what follows.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre>
 _method a.b
   _return 10

@@ -1,7 +1,19 @@
 <p>Use of sw:char16_vector.evaluate()</p>
-<h2>Explanation</h2>
-<pre>
-_local user_input << "gis_program_manager.cached_dataset(:gis).collection(:very_important_data).empty()"
-user_input.evaluate()
+<h2>Why is this an issue?</h2>
+<p>Using <code>sw:char16_vector.evaluate()</code> to execute a string as Magik code is dangerous when that string comes from user input, as it can lead to code injection vulnerabilities if the input is not properly sanitized.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method exemplar.example_method()
+    _local user_input << "gis_program_manager.cached_dataset(:gis).collection(:very_important_data).empty()"
+    user_input.evaluate()
+_endmethod
 </pre>
-<p>The example shows the use of <code>sw:char16_vector.evaluate()</code> to execute user input as Magik code. This is dangerous as it can lead to code injection vulnerabilities if the user input is not properly sanitized.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method exemplar.example_method()
+    _local user_input << "gis_program_manager.cached_dataset(:gis).collection(:very_important_data).empty()"
+    user_input.sandboxed_evaluate()
+_endmethod
+</pre>
+<p><code>sandboxed_evaluate()</code> runs the expression without access to global values, eliminating the risk of accessing session state or variables.</p>

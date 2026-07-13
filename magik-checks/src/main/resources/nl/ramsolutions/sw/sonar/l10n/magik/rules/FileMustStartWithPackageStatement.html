@@ -1,12 +1,14 @@
 <p>File must start with a <code>_package</code>-statement.</p>
+<h2>Why is this an issue?</h2>
 <p>This ensures the code is loaded into the correct package.</p>
-<h2>Non-compliant Code Example</h2>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 _block
   write(a)
 _endblock
 </pre>
-<h2>Compliant Code Example</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 _package user
 

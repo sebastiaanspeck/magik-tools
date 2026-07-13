@@ -1,9 +1,18 @@
 <p>Method Exists</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Calling a method that does not exist on the receiver's type will result in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _block
     rope.non_existing_method()
 _endblock
 $
 </pre>
-<p>Calling the method <code>rope.non_existing_method()</code> will result in an error, because the method does not exist.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+_block
+    rope.new()
+_endblock
+$
+</pre>

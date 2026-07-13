@@ -1,5 +1,8 @@
 <p>Distance between a variable declaration and its first usage.</p>
-<h2>Non-compliant Code Example, max distance is 5</h2>
+<h2>Why is this an issue?</h2>
+<p>The further apart a variable's declaration and its first use are, the more a reader has to hold in mind, or scroll back to, in order to know what it holds by the time it's used. Keeping the declaration close to its first use makes the code easier to follow.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example, max distance is 5</h4>
 <pre>
 _local a << 10
 do_something_unrelated()  # distance to a is 1

@@ -1,8 +1,37 @@
 <p>Super method exists</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>Calling <code>_super</code> with a method that does not exist on the parent type will result in a runtime error.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+def_slotted_exemplar(
+    :parent,
+    {})
+
+def_slotted_exemplar(
+    :child,
+    {},
+    :parent)
+
 _method child.do_something()
     _super.nonexistent()
 _endmethod
 </pre>
-<p>In the above example, <code>_super.nonexistent()</code> calls a method that does not exist on the parent type. This will result in a runtime error.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+def_slotted_exemplar(
+    :parent,
+    {})
+
+def_slotted_exemplar(
+    :child,
+    {},
+    :parent)
+
+_method parent.do_something()
+_endmethod
+
+_method child.do_something()
+    _super.do_something()
+_endmethod
+</pre>

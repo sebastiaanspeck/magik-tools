@@ -1,6 +1,8 @@
 <p>Do not use the method <code>unsafe_evaluate()</code>.</p>
+<h2>Why is this an issue?</h2>
 <p>The method <code>unsafe_evaluate()</code> is unsafe to use. The evaluated string might have unintended side effects.</p>
-<h2>Non-compliant Code Examples</h2>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre data-diff-id="1" data-diff-type="noncompliant">
 # Smallworld 5.2.10 and up.
 "write('hello')".unsafe_evaluate()
@@ -15,7 +17,7 @@ write_string(%{, "hello", %}).evaluate()
 <p>If you need to serialize/deserialize data, you should use the XML (See <code>sw:serial_xml_thing</code>/<code>sw:serial_structure_mixin</code>) or use the pickle mechanism (See <code>sw:object.pickle()</code> and <code>ro_charindex_mixin.unpickle()</code>).</p>
 <p>In case there is no other option than to evaluate input, the method <code>sandboxed_evaluate()</code> should be used instead, which is available since Smallworld 5.2.10.</p>
 <p>This evaluates the expression within a sandbox that does not allow access to global values. This eliminates the possibility of accessing session state or variables.</p>
-<h2>Compliant Code Examples</h2>
+<h4>Compliant solution</h4>
 <pre data-diff-id="1" data-diff-type="compliant">
 # Smallworld 5.2.10 and up.
 "write('hello')".pickle()

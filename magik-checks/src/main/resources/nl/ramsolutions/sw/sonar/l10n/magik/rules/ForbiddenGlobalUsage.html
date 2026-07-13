@@ -1,5 +1,8 @@
 <p>Forbidden usage of global.</p>
-<h2>Non-compliant Code Example</h2>
+<h2>Why is this an issue?</h2>
+<p>A project can configure this check with the specific globals it wants to avoid, typically because direct use is unsafe or discouraged in that codebase, so the convention is enforced automatically instead of relying on manual review.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <pre>
 _dynamic !current_grs! << grs
 </pre>

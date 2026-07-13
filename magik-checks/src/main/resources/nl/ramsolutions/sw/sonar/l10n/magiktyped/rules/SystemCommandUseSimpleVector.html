@@ -1,15 +1,18 @@
 <p>Use simple_vector for sw:system.do_command() and friends</p>
-<h2>Explanation</h2>
+<h2>Why is this an issue?</h2>
 <p>When using <code>sw:system.do_command()</code>, <code>sw:system.start_command()</code>, <code>sw:system.start_command_with_io()</code> or similar functions to execute system commands, it is recommended to use a <code>simple_vector</code> to pass the command. This helps to avoid command injection vulnerabilities, as the command and its arguments are clearly separated.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
 <p>An example where malicious user input leads to command injection:</p>
-<pre>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 _local user_input << "file.txt /etc/passwd" # Something a mailcious user entered.
 _local command << write_string("/bin/cat ", user_input)
 system.do_command(command)
 </pre>
 <p>In this example, the user input contains multiple space-separated values that will be interpreted as separate command arguments. When the command string <code>"/bin/cat file.txt /etc/passwd"</code> is executed, it will read both <code>file.txt</code> and <code>/etc/passwd</code>, allowing the malicious user to access sensitive system files.</p>
-<p>To mitigate this risk, use a <code>simple_vector</code> to pass the command and its arguments separately:</p>
-<pre>
+<h4>Compliant solution</h4>
+<p>Use a <code>simple_vector</code> to pass the command and its arguments separately:</p>
+<pre data-diff-id="1" data-diff-type="compliant">
 _local user_input << "file.txt /etc/passwd" # Something a mailcious user entered.
 _local command << {"/bin/cat", user_input}
 system.do_command(command)
