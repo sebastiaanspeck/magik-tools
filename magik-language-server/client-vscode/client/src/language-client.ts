@@ -5,6 +5,7 @@ import * as vscodeLanguageClient from 'vscode-languageclient/node';
 
 import { getJavaExec } from './common';
 import { MAGIK_TOOLS_VERSION } from './const';
+import { createServerLogOutputChannel } from './logging';
 import { MagikSessionProvider } from './magik-session';
 
 
@@ -23,13 +24,13 @@ export class MagikLanguageClient implements vscode.Disposable {
 		this.registerCommands();
 	}
 
-	private createSessionOutputChannel(): vscode.OutputChannel {
+	private createSessionOutputChannel(): vscode.LogOutputChannel {
 		this._outputSessionCounter += 1;
 		const channelName =
 			this._outputSessionCounter === 1
 				? 'Magik Language Server'
 				: `Magik Language Server #${this._outputSessionCounter}`;
-		const outputChannel = vscode.window.createOutputChannel(channelName);
+		const outputChannel = createServerLogOutputChannel(channelName);
 		this._context.subscriptions.push(outputChannel);
 		return outputChannel;
 	}

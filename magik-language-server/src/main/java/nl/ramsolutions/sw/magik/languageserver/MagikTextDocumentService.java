@@ -15,6 +15,8 @@ import nl.ramsolutions.sw.MagikToolsProperties;
 import nl.ramsolutions.sw.OpenedFile;
 import nl.ramsolutions.sw.loadlist.LoadListFile;
 import nl.ramsolutions.sw.magik.MagikTypedFile;
+import nl.ramsolutions.sw.magik.SourcePathResolver;
+import nl.ramsolutions.sw.magik.analysis.MagikAnalysisSettings;
 import nl.ramsolutions.sw.magik.analysis.definitions.IDefinitionKeeper;
 import nl.ramsolutions.sw.magik.languageserver.callhierarchy.CallHierarchyProvider;
 import nl.ramsolutions.sw.magik.languageserver.codeactions.CodeActionProvider;
@@ -758,8 +760,7 @@ public class MagikTextDocumentService implements TextDocumentService {
         () -> {
           final List<nl.ramsolutions.sw.magik.Location> locations =
               this.implementationProvider.provideImplementations(magikFile, position);
-          final List<Location> lsp4jLocations =
-              locations.stream().map(Lsp4jConversion::locationToLsp4j).toList();
+          final List<Location> lsp4jLocations = this.toClientLocations(locations);
           if (LOGGER_DURATION.isTraceEnabled()) {
             LOGGER_DURATION.trace(
                 "Duration: {} implementation, uri: {}, position: {},{}",
@@ -872,7 +873,7 @@ public class MagikTextDocumentService implements TextDocumentService {
           }
 
           final Either<List<? extends Location>, List<? extends LocationLink>> forLeft =
-              Either.forLeft(locations.stream().map(Lsp4jConversion::locationToLsp4j).toList());
+              Either.forLeft(this.toClientLocations(locations));
           if (LOGGER_DURATION.isTraceEnabled()) {
             LOGGER_DURATION.trace(
                 "Duration: {} definitions, uri: {}",
@@ -901,24 +902,20 @@ public class MagikTextDocumentService implements TextDocumentService {
             references = Collections.emptyList();
           } else if (openedFile instanceof ProductDefFile productDefFile) {
             references =
-                this.referencesProvider.provideReferences(productDefFile, position).stream()
-                    .map(Lsp4jConversion::locationToLsp4j)
-                    .toList();
+                this.toClientLocations(
+                    this.referencesProvider.provideReferences(productDefFile, position));
           } else if (openedFile instanceof ModuleDefFile moduleDefFile) {
             references =
-                this.referencesProvider.provideReferences(moduleDefFile, position).stream()
-                    .map(Lsp4jConversion::locationToLsp4j)
-                    .toList();
+                this.toClientLocations(
+                    this.referencesProvider.provideReferences(moduleDefFile, position));
           } else if (openedFile instanceof LoadListFile loadListFile) {
             references =
-                this.referencesProvider.provideReferences(loadListFile, position).stream()
-                    .map(Lsp4jConversion::locationToLsp4j)
-                    .toList();
+                this.toClientLocations(
+                    this.referencesProvider.provideReferences(loadListFile, position));
           } else if (openedFile instanceof MagikTypedFile magikFile) {
             references =
-                this.referencesProvider.provideReferences(magikFile, position).stream()
-                    .map(Lsp4jConversion::locationToLsp4j)
-                    .toList();
+                this.toClientLocations(
+                    this.referencesProvider.provideReferences(magikFile, position));
           } else {
             throw new UnsupportedOperationException();
           }
@@ -1622,5 +1619,14 @@ public class MagikTextDocumentService implements TextDocumentService {
           }
           return ranges;
         });
+  }
+
+  private List<Location> toClientLocations(
+      final List<nl.ramsolutions.sw.magik.Location> locations) {
+    final SourcePathResolver sourcePathResolver =
+        new MagikAnalysisSettings(this.properties).getSourcePathResolver();
+    return ClientLocationResolver.resolveAndDedup(locations, sourcePathResolver).stream()
+        .map(Lsp4jConversion::locationToLsp4j)
+        .toList();
   }
 }

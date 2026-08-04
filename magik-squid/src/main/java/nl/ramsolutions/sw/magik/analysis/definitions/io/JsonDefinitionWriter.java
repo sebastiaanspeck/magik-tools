@@ -16,8 +16,12 @@ import java.io.IOException;
 import java.io.Writer;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Comparator;
 import nl.ramsolutions.sw.magik.analysis.definitions.BinaryOperatorDefinition;
 import nl.ramsolutions.sw.magik.analysis.definitions.ConditionDefinition;
@@ -105,21 +109,45 @@ public final class JsonDefinitionWriter {
   private void run(final Path path) throws IOException {
     LOGGER.debug("Writing type database to path: {}", path);
 
-    final File file = path.toFile();
-    try (final FileWriter fileReader = new FileWriter(file, StandardCharsets.ISO_8859_1);
-        final BufferedWriter bufferedWriter = new BufferedWriter(fileReader)) {
-      this.writeProducts(bufferedWriter);
-      this.writeModules(bufferedWriter);
-      this.writeMagikFiles(bufferedWriter);
-      this.writePackages(bufferedWriter);
-      this.writeExemplars(bufferedWriter);
-      this.writeInheritance(bufferedWriter);
-      this.writeSlots(bufferedWriter);
-      this.writeGlobals(bufferedWriter);
-      this.writeMethods(bufferedWriter);
-      this.writeProcedures(bufferedWriter);
-      this.writeConditions(bufferedWriter);
-      this.writeBinaryOperators(bufferedWriter);
+    // Write to a temporary file first, then move it into place.
+    // This guarantees a reader never sees a partially-written file.
+    final Path tempPath = path.resolveSibling(path.getFileName().toString() + ".tmp");
+    try {
+      final File tempFile = tempPath.toFile();
+      try (final FileWriter fileWriter = new FileWriter(tempFile, StandardCharsets.UTF_8);
+          final BufferedWriter bufferedWriter = new BufferedWriter(fileWriter)) {
+        this.writeProducts(bufferedWriter);
+        this.writeModules(bufferedWriter);
+        this.writeMagikFiles(bufferedWriter);
+        this.writePackages(bufferedWriter);
+        this.writeExemplars(bufferedWriter);
+        this.writeInheritance(bufferedWriter);
+        this.writeSlots(bufferedWriter);
+        this.writeGlobals(bufferedWriter);
+        this.writeMethods(bufferedWriter);
+        this.writeProcedures(bufferedWriter);
+        this.writeConditions(bufferedWriter);
+        this.writeBinaryOperators(bufferedWriter);
+      }
+
+      JsonDefinitionWriter.moveIntoPlace(tempPath, path);
+    } catch (final RuntimeException | IOException exception) {
+      try {
+        Files.deleteIfExists(tempPath);
+      } catch (final IOException deleteException) {
+        exception.addSuppressed(deleteException);
+      }
+      throw exception;
+    }
+  }
+
+  private static void moveIntoPlace(final Path source, final Path target) throws IOException {
+    try {
+      Files.move(
+          source, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+    } catch (final AtomicMoveNotSupportedException exception) {
+      LOGGER.debug("Atomic move not supported, falling back to non-atomic replace", exception);
+      Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
     }
   }
 
@@ -143,86 +171,77 @@ public final class JsonDefinitionWriter {
         .create();
   }
 
-  private void writeInstruction(final Writer writer, final JsonElement instruction) {
-    final String instructionStr = instruction.toString();
+  private void writeInstruction(final Writer writer, final String instruction) {
     try {
-      writer.write(instructionStr);
+      writer.write(instruction);
       writer.write("\n");
     } catch (final IOException exception) {
       LOGGER.error("Caught exception writing instruction", exception);
     }
   }
 
-  private void writeProducts(final Writer writer) {
-    final Comparator<ProductDefinition> sorter = Comparator.comparing(ProductDefinition::getName);
-    this.definitionKeeper.getProductDefinitions().stream()
-        .sorted(sorter)
+  private <T> String serializeDefinition(
+      final Gson gson, final T definition, final Instruction instruction) {
+    final JsonObject instructionObject = (JsonObject) gson.toJsonTree(definition);
+    instructionObject.addProperty(Instruction.INSTRUCTION.getValue(), instruction.getValue());
+    return instructionObject.toString();
+  }
+
+  private <T> void writeDefinitions(
+      final Writer writer,
+      final Collection<T> definitions,
+      final Comparator<T> sorter,
+      final Instruction instruction) {
+    final Gson gson = this.buildGson();
+    // If the sorter does not provide a total order, tie-break using the serialized form.
+    final Comparator<T> totalSorter =
+        sorter.thenComparing(definition -> this.serializeDefinition(gson, definition, instruction));
+    definitions.stream()
+        .sorted(totalSorter)
         .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.PRODUCT.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+            definition ->
+                this.writeInstruction(
+                    writer, this.serializeDefinition(gson, definition, instruction)));
+  }
+
+  private void writeProducts(final Writer writer) {
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getProductDefinitions(),
+        Comparator.comparing(ProductDefinition::getName),
+        Instruction.PRODUCT);
   }
 
   private void writeModules(final Writer writer) {
-    final Comparator<ModuleDefinition> sorter = Comparator.comparing(ModuleDefinition::getName);
-    this.definitionKeeper.getModuleDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.MODULE.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getModuleDefinitions(),
+        Comparator.comparing(ModuleDefinition::getName),
+        Instruction.MODULE);
   }
 
   private void writeMagikFiles(final Writer writer) {
-    final Comparator<MagikFileDefinition> sorter =
-        Comparator.comparing(MagikFileDefinition::getUri);
-    this.definitionKeeper.getMagikFileDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.MAGIK_FILE.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getMagikFileDefinitions(),
+        Comparator.comparing(MagikFileDefinition::getUri),
+        Instruction.MAGIK_FILE);
   }
 
   private void writePackages(final Writer writer) {
-    final Comparator<PackageDefinition> sorter = Comparator.comparing(PackageDefinition::getName);
-    this.definitionKeeper.getPackageDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.PACKAGE.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getPackageDefinitions(),
+        Comparator.comparing(PackageDefinition::getName),
+        Instruction.PACKAGE);
   }
 
   private void writeExemplars(final Writer writer) {
-    final Comparator<ExemplarDefinition> sorter =
-        Comparator.comparing(ExemplarDefinition::getTypeString);
-    this.definitionKeeper.getExemplarDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.TYPE.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getExemplarDefinitions(),
+        Comparator.comparing(ExemplarDefinition::getTypeString),
+        Instruction.TYPE);
   }
 
   private void writeInheritance(final Writer writer) {
@@ -230,34 +249,22 @@ public final class JsonDefinitionWriter {
         Comparator.comparing(InheritanceDefinition::getChildTypeName);
     final Comparator<InheritanceDefinition> parentComparer =
         Comparator.comparing(InheritanceDefinition::getParentTypeName);
-    final Comparator<InheritanceDefinition> sorter = childComparer.thenComparing(parentComparer);
-    this.definitionKeeper.getInheritanceDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.INHERITANCE.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getInheritanceDefinitions(),
+        childComparer.thenComparing(parentComparer),
+        Instruction.INHERITANCE);
   }
 
   private void writeSlots(final Writer writer) {
     final Comparator<SlotDefinition> ownerComparer =
         Comparator.comparing(SlotDefinition::getOwnerTypeName);
     final Comparator<SlotDefinition> nameComparer = Comparator.comparing(SlotDefinition::getName);
-    final Comparator<SlotDefinition> sorter = ownerComparer.thenComparing(nameComparer);
-    this.definitionKeeper.getSlotDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.SLOT.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getSlotDefinitions(),
+        ownerComparer.thenComparing(nameComparer),
+        Instruction.SLOT);
   }
 
   private void writeMethods(final Writer writer) {
@@ -265,83 +272,49 @@ public final class JsonDefinitionWriter {
         Comparator.comparing(MethodDefinition::getTypeName);
     final Comparator<MethodDefinition> nameComparer =
         Comparator.comparing(MethodDefinition::getName);
-    final Comparator<MethodDefinition> sorter = typeNameComparer.thenComparing(nameComparer);
-    this.definitionKeeper.getMethodDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.METHOD.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getMethodDefinitions(),
+        typeNameComparer.thenComparing(nameComparer),
+        Instruction.METHOD);
   }
 
   private void writeProcedures(final Writer writer) {
-    final Comparator<ProcedureDefinition> sorter =
-        Comparator.comparing(ProcedureDefinition::getTypeString);
-    this.definitionKeeper.getProcedureDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.METHOD.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getProcedureDefinitions(),
+        Comparator.comparing(ProcedureDefinition::getTypeString),
+        Instruction.PROCEDURE);
   }
 
-  private void writeConditions(final BufferedWriter writer) {
-    final Comparator<ConditionDefinition> sorter =
-        Comparator.comparing(ConditionDefinition::getName);
-    this.definitionKeeper.getConditionDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.CONDITION.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+  private void writeConditions(final Writer writer) {
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getConditionDefinitions(),
+        Comparator.comparing(ConditionDefinition::getName),
+        Instruction.CONDITION);
   }
 
-  private void writeBinaryOperators(final BufferedWriter writer) {
+  private void writeBinaryOperators(final Writer writer) {
     final Comparator<BinaryOperatorDefinition> lhsComparer =
         Comparator.comparing(BinaryOperatorDefinition::getLhsTypeName);
     final Comparator<BinaryOperatorDefinition> rhsComparer =
         Comparator.comparing(BinaryOperatorDefinition::getRhsTypeName);
     final Comparator<BinaryOperatorDefinition> resultComparer =
         Comparator.comparing(BinaryOperatorDefinition::getResultTypeName);
-    final Comparator<BinaryOperatorDefinition> sorter =
-        lhsComparer.thenComparing(rhsComparer).thenComparing(resultComparer);
-    this.definitionKeeper.getBinaryOperatorDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.BINARY_OPERATOR.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getBinaryOperatorDefinitions(),
+        lhsComparer.thenComparing(rhsComparer).thenComparing(resultComparer),
+        Instruction.BINARY_OPERATOR);
   }
 
   private void writeGlobals(final Writer writer) {
-    final Comparator<GlobalDefinition> sorter =
-        Comparator.comparing(GlobalDefinition::getTypeString);
-    this.definitionKeeper.getGlobalDefinitions().stream()
-        .sorted(sorter)
-        .forEach(
-            definition -> {
-              final Gson gson = this.buildGson();
-              final JsonObject instruction = (JsonObject) gson.toJsonTree(definition);
-              instruction.addProperty(
-                  Instruction.INSTRUCTION.getValue(), Instruction.GLOBAL.getValue());
-              this.writeInstruction(writer, instruction);
-            });
+    this.writeDefinitions(
+        writer,
+        this.definitionKeeper.getGlobalDefinitions(),
+        Comparator.comparing(GlobalDefinition::getTypeString),
+        Instruction.GLOBAL);
   }
 
   /**
