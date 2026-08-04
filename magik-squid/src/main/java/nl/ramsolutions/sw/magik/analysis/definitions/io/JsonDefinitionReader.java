@@ -131,8 +131,6 @@ public final class JsonDefinitionReader {
 
     @Override
     public ProductDefinition createInstance(final Type type) {
-      // This ensures `MethodDefinition.usedGlobals` etc are initialized properly,
-      // even if these were not set in the source JSON.
       return new ProductDefinition(
           null, null, null, null, null, null, null, null, Collections.emptyList());
     }
@@ -142,8 +140,6 @@ public final class JsonDefinitionReader {
 
     @Override
     public ModuleDefinition createInstance(final Type type) {
-      // This ensures `MethodDefinition.usedGlobals` etc are initialized properly,
-      // even if these were not set in the source JSON.
       return new ModuleDefinition(
           null,
           null,
@@ -161,8 +157,6 @@ public final class JsonDefinitionReader {
 
     @Override
     public MethodDefinition createInstance(final Type type) {
-      // This ensures `MethodDefinition.usedGlobals` etc are initialized properly,
-      // even if these were not set in the source JSON.
       return new MethodDefinition(
           null,
           null,
@@ -185,8 +179,6 @@ public final class JsonDefinitionReader {
 
     @Override
     public ExemplarDefinition createInstance(final Type type) {
-      // This ensures `MethodDefinition.usedGlobals` etc are initialized properly,
-      // even if these were not set in the source JSON.
       return new ExemplarDefinition(
           null,
           null,
@@ -204,8 +196,6 @@ public final class JsonDefinitionReader {
 
     @Override
     public ProcedureDefinition createInstance(final Type type) {
-      // This ensures `MethodDefinition.usedGlobals` etc are initialized properly,
-      // even if these were not set in the source JSON.
       return new ProcedureDefinition(
           null,
           null,
@@ -222,6 +212,42 @@ public final class JsonDefinitionReader {
     }
   }
 
+  private static final class GlobalDefinitionCreator implements InstanceCreator<GlobalDefinition> {
+
+    @Override
+    public GlobalDefinition createInstance(final Type type) {
+      return new GlobalDefinition(
+          null,
+          null,
+          null,
+          null,
+          null,
+          TypeString.UNDEFINED,
+          TypeString.UNDEFINED,
+          null,
+          Collections.emptyList());
+    }
+  }
+
+  private static final class PackageDefinitionCreator
+      implements InstanceCreator<PackageDefinition> {
+
+    @Override
+    public PackageDefinition createInstance(final Type type) {
+      return new PackageDefinition(null, null, null, null, null, "dummy_package", List.of());
+    }
+  }
+
+  private static final class ConditionDefinitionCreator
+      implements InstanceCreator<ConditionDefinition> {
+
+    @Override
+    public ConditionDefinition createInstance(final Type type) {
+      return new ConditionDefinition(
+          null, null, null, null, null, "dummy_condition", null, List.of(), null);
+    }
+  }
+
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonDefinitionReader.class);
 
   private final IDefinitionKeeper definitionKeeper;
@@ -235,7 +261,7 @@ public final class JsonDefinitionReader {
 
     final File file = path.toFile();
     int lineNo = 1;
-    try (FileReader fileReader = new FileReader(file, StandardCharsets.ISO_8859_1);
+    try (FileReader fileReader = new FileReader(file, StandardCharsets.UTF_8);
         BufferedReader bufferedReader = new BufferedReader(fileReader)) {
       String line = bufferedReader.readLine();
       while (line != null) {
@@ -345,6 +371,9 @@ public final class JsonDefinitionReader {
         .registerTypeAdapter(MethodDefinition.class, new MethodDefinitionCreator())
         .registerTypeAdapter(ProcedureDefinition.class, new ProcedureDefinitionCreator())
         .registerTypeAdapter(ExemplarDefinition.class, new ExemplarDefinitionCreator())
+        .registerTypeAdapter(GlobalDefinition.class, new GlobalDefinitionCreator())
+        .registerTypeAdapter(PackageDefinition.class, new PackageDefinitionCreator())
+        .registerTypeAdapter(ConditionDefinition.class, new ConditionDefinitionCreator())
         .create();
   }
 

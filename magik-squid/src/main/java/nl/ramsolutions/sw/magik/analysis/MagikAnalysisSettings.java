@@ -1,6 +1,9 @@
 package nl.ramsolutions.sw.magik.analysis;
 
+import java.util.Map;
+import java.util.function.Function;
 import nl.ramsolutions.sw.MagikToolsProperties;
+import nl.ramsolutions.sw.magik.SourcePathResolver;
 
 /**
  * Settings for magik analysis.
@@ -14,7 +17,17 @@ public class MagikAnalysisSettings {
   private static final String INDEX_METHOD_USAGES = "magik.typing.indexMethodUsages";
   private static final String INDEX_SLOT_USAGES = "magik.typing.indexSlotUsages";
   private static final String INDEX_CONDITION_USAGES = "magik.typing.indexConditionUsages";
+  private static final String INDEX_UNARY_OPERATOR_USAGES = "magik.typing.indexUnaryOperatorUsages";
+  private static final String INDEX_BINARY_OPERATOR_USAGES =
+      "magik.typing.indexBinaryOperatorUsages";
   private static final String CACHE_INDEXED_DEFINITIONS = "magik.typing.cacheIndexedDefinitions";
+  private static final String SMALLWORLD_GIS = "magik.smallworldGis";
+  private static final String SOURCE_PATH_MAPPINGS = "magik.sourcePathMappings";
+
+  /**
+   * Name of the Smallworld logical, as it appears in dumped source paths ({@code $SMALLWORLD_GIS}).
+   */
+  private static final String SMALLWORLD_GIS_LOGICAL = "SMALLWORLD_GIS";
 
   private final MagikToolsProperties properties;
 
@@ -64,12 +77,78 @@ public class MagikAnalysisSettings {
   }
 
   /**
+   * Determine if unary operator usages should be indexed.
+   *
+   * @return True if unary operator usages should be indexed, false otherwise.
+   */
+  public boolean getTypingIndexUnaryOperatorUsages() {
+    return this.properties.getPropertyBoolean(INDEX_UNARY_OPERATOR_USAGES) != Boolean.FALSE;
+  }
+
+  /**
+   * Determine if binary operator usages should be indexed.
+   *
+   * @return True if binary operator usages should be indexed, false otherwise.
+   */
+  public boolean getTypingIndexBinaryOperatorUsages() {
+    return this.properties.getPropertyBoolean(INDEX_BINARY_OPERATOR_USAGES) != Boolean.FALSE;
+  }
+
+  /**
    * Determine if indexed definitions should be cached for typing.
    *
    * @return True if indexed definitions should be cached, false otherwise.
    */
   public boolean getTypingCacheIndexedDefinitions() {
     return this.properties.getPropertyBoolean(CACHE_INDEXED_DEFINITIONS) != Boolean.FALSE;
+  }
+
+  /**
+   * Get the configured Smallworld gis (installation) directory, used to expand {@code
+   * $SMALLWORLD_GIS} in dumped definition source paths.
+   *
+   * @return The Smallworld gis directory, or {@code null} when not set.
+   */
+  public String getSmallworldGis() {
+    return this.properties.getPropertyString(SMALLWORLD_GIS);
+  }
+
+  /**
+   * Get the configured source-path prefix mappings, used to rewrite a raw, installation-specific
+   * absolute source path (e.g. a {@code C:/projects/...} path baked into class-info) or a logical
+   * ({@code $SOMS_DIR}) to a resolvable path. Configured as an object {@code
+   * magik.sourcePathMappings: { "<from>": "<to>" }}.
+   *
+   * @return Map of recorded path prefix to replacement.
+   */
+  public Map<String, String> getSourcePathMappings() {
+    return this.properties.getPropertyMap(SOURCE_PATH_MAPPINGS);
+  }
+
+  /**
+   * Build a configured source-path resolver that owns the environment resolver and the prefix
+   * mappings, so consumers hold a single mapper rather than threading resolution config.
+   *
+   * @return The source-path resolver.
+   */
+  public SourcePathResolver getSourcePathResolver() {
+    return new SourcePathResolver(this.getEnvironment(), this.getSourcePathMappings());
+  }
+
+  /**
+   * Build an environment-variable resolver for expanding {@code $NAME} in dumped definition source
+   * paths. Overlays the {@code magik.smallworldGis} setting on the {@code SMALLWORLD_GIS} logical
+   * (setting wins when set), falling back to the process environment for it and every other name.
+   *
+   * @return Resolver mapping a variable name to its value (or {@code null} when unset).
+   */
+  public Function<String, String> getEnvironment() {
+    final String gis = this.getSmallworldGis();
+    if (gis == null) {
+      return System::getenv;
+    }
+
+    return name -> SMALLWORLD_GIS_LOGICAL.equals(name) ? gis : System.getenv(name);
   }
 
   /**
