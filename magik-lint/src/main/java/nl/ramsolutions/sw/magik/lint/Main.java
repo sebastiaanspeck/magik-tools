@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.LogManager;
@@ -252,10 +253,13 @@ public final class Main {
     final File outputFile = (File) commandLine.getParsedOptionValue(OPTION_GENERATE_RCFILE);
     final String[] profilePaths = commandLine.getArgs();
 
-    final List<ActiveRule> activeRules = new ArrayList<>();
+    final Map<String, List<ActiveRule>> activeRulesByLanguage = new LinkedHashMap<>();
     for (final String profilePath : profilePaths) {
       final Path xmlPath = Path.of(profilePath);
-      activeRules.addAll(QualityProfileImporter.parse(xmlPath));
+      final QualityProfile qualityProfile = QualityProfileImporter.parse(xmlPath);
+      activeRulesByLanguage
+          .computeIfAbsent(qualityProfile.language(), key -> new ArrayList<>())
+          .addAll(qualityProfile.activeRules());
     }
 
     // --generate-rcfile also covers load_list.txt/patch_list.txt checks, unlike
@@ -266,9 +270,13 @@ public final class Main {
                 LoadListCheckList.INSTANCE.getBaseChecks().stream())
             .sorted(Comparator.comparing(Class::getSimpleName))
             .toList();
-    final String contents = RcFileGenerator.generate(checks, activeRules);
+    final RcFileGenerator.GenerationResult result =
+        RcFileGenerator.generate(checks, activeRulesByLanguage);
     final Path outputPath = outputFile.toPath();
-    Files.writeString(outputPath, contents);
+    Files.writeString(outputPath, result.contents());
+
+    final PrintStream errStream = Main.getErrStream();
+    result.warnings().forEach(errStream::println);
 
     final PrintStream outStream = Main.getOutStream();
     outStream.println("Wrote " + outputPath);

@@ -31,10 +31,10 @@ final class QualityProfileImporter {
    * Parse the active rules from a quality profile backup XML file.
    *
    * @param xmlPath Path to the XML file.
-   * @return Active rules found in the file.
+   * @return The parsed {@link QualityProfile}, containing its language and active rules.
    * @throws IOException -
    */
-  static List<ActiveRule> parse(final Path xmlPath) throws IOException {
+  static QualityProfile parse(final Path xmlPath) throws IOException {
     final Document document;
     try {
       final DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -48,6 +48,15 @@ final class QualityProfileImporter {
       document = builder.parse(file);
     } catch (final ParserConfigurationException | SAXException exception) {
       throw new IOException("Cannot parse quality profile: " + xmlPath, exception);
+    }
+
+    final Element profileElement = document.getDocumentElement();
+    final String language = QualityProfileImporter.childText(profileElement, "language");
+    if (language == null) {
+      throw new IOException(
+          "Quality profile is missing its <language> element, cannot determine which "
+              + "magik-lint checks it applies to: "
+              + xmlPath);
     }
 
     final List<ActiveRule> activeRules = new ArrayList<>();
@@ -73,7 +82,7 @@ final class QualityProfileImporter {
       activeRules.add(new ActiveRule(key, parameters));
     }
 
-    return activeRules;
+    return new QualityProfile(language, activeRules);
   }
 
   private static String childText(final Element parent, final String tagName) {

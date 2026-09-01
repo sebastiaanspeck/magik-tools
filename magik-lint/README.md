@@ -119,9 +119,15 @@ Definition`, `Magik Load List`), since SonarQube differentiates languages by fil
 
 To keep both in sync, `--generate-rcfile` builds a `magik-lint.properties` file from one or more
 SonarQube quality profile backup XML files (obtained via a quality profile's "Back up" action, or
-`api/qualityprofiles/backup`). Any check absent from every given profile is added to `disabled`; a check
-active in a profile but disabled by default in code is added to `enabled`; non-default rule parameters are
-carried over.
+`api/qualityprofiles/backup`). Each backup XML records which SonarQube language it belongs to, so a
+check is only added to `disabled` if the profile for its language was actually supplied and the
+check is genuinely absent from it; a check active in a profile but disabled by default in code is
+added to `enabled`; non-default rule parameters are carried over.
+
+If you omit a language's profile entirely (e.g. forgetting `load-list-profile.xml`), that
+language's checks are left at their code-side defaults instead of being force-disabled, and
+`--generate-rcfile` prints a warning listing which language(s) had no profile supplied, so you know
+the generated rcfile may be incomplete.
 
 Pass the output path, followed by one XML file per profile you want to combine:
 

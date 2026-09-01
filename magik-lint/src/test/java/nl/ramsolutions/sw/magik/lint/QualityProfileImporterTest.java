@@ -4,9 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -23,22 +22,15 @@ class QualityProfileImporterTest {
     return Path.of(url.toURI());
   }
 
-  private static Set<String> disabledKeys(final String rcFile) {
-    return rcFile
-        .lines()
-        .filter(line -> line.startsWith("disabled="))
-        .findFirst()
-        .map(line -> line.substring("disabled=".length()))
-        .map(csv -> Set.copyOf(Arrays.asList(csv.split(","))))
-        .orElse(Set.of());
-  }
-
   @Test
   void testParseSingleProfile() throws Exception {
     final Path xmlPath = this.resourcePath("magik_profile.xml");
 
-    final List<ActiveRule> activeRules = QualityProfileImporter.parse(xmlPath);
+    final QualityProfile qualityProfile = QualityProfileImporter.parse(xmlPath);
 
+    assertThat(qualityProfile.language()).isEqualTo("magik");
+
+    final List<ActiveRule> activeRules = qualityProfile.activeRules();
     assertThat(activeRules).hasSize(2);
     assertThat(activeRules)
         .anySatisfy(
@@ -55,9 +47,14 @@ class QualityProfileImporterTest {
     final Path magikXmlPath = this.resourcePath("magik_profile.xml");
     final Path productModuleDefXmlPath = this.resourcePath("product_module_def_profile.xml");
 
-    final List<ActiveRule> activeRules = new ArrayList<>();
-    activeRules.addAll(QualityProfileImporter.parse(magikXmlPath));
-    activeRules.addAll(QualityProfileImporter.parse(productModuleDefXmlPath));
+    final QualityProfile magikProfile = QualityProfileImporter.parse(magikXmlPath);
+    final QualityProfile productModuleDefProfile =
+        QualityProfileImporter.parse(productModuleDefXmlPath);
+
+    final Map<String, List<ActiveRule>> activeRulesByLanguage =
+        Map.of(
+            magikProfile.language(), magikProfile.activeRules(),
+            productModuleDefProfile.language(), productModuleDefProfile.activeRules());
 
     final List<Class<? extends Check>> allChecks =
         Stream.of(
@@ -67,8 +64,9 @@ class QualityProfileImporterTest {
             .flatMap(stream -> stream)
             .collect(Collectors.toUnmodifiableList());
 
-    final String rcFile = RcFileGenerator.generate(allChecks, activeRules);
-    final Set<String> disabled = QualityProfileImporterTest.disabledKeys(rcFile);
+    final RcFileGenerator.GenerationResult result =
+        RcFileGenerator.generate(allChecks, activeRulesByLanguage);
+    final Set<String> disabled = RcFileTestSupport.disabledKeys(result.contents());
 
     // Active in one of the two profiles: must not be disabled.
     assertThat(disabled)
@@ -77,5 +75,6 @@ class QualityProfileImporterTest {
     // Not active in either profile: must be disabled.
     assertThat(disabled)
         .contains("product-def-missing-description", "module-def-missing-description");
+    assertThat(result.warnings()).isEmpty();
   }
 }
