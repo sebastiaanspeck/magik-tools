@@ -71,13 +71,52 @@ public class GetGlobalValueUnsetCheck extends MagikCheck {
       return false;
     }
 
-    final AstNode ifNode = conditionalExpressionNode.getParent();
-    if (ifNode == null || ifNode.isNot(MagikGrammar.IF)) {
+    final AstNode parentNode = conditionalExpressionNode.getParent();
+    if (parentNode == null) {
       return false;
     }
 
-    // An _elif/_else means the missing-value case is handled elsewhere.
-    return ifNode.hasDirectChildren(MagikGrammar.ELIF, MagikGrammar.ELSE);
+    if (parentNode.is(MagikGrammar.IF)) {
+      // Guard is the top-level `_if` condition: any `_elif`/`_else` handles it.
+      return this.hasLaterElifOrElse(parentNode, null);
+    }
+
+    if (parentNode.is(MagikGrammar.ELIF)) {
+      // `_elif` nodes are flat (non-nested) direct children of the enclosing
+      // `_if`, e.g.: IF -> CONDITIONAL_EXPRESSION, THEN, BODY, ELIF*, ELSE?,
+      // ENDIF. Only a LATER `_elif`/`_else` in that chain handles the
+      // missing-value case for this particular guard.
+      final AstNode enclosingIfNode = parentNode.getParent();
+      if (enclosingIfNode == null || enclosingIfNode.isNot(MagikGrammar.IF)) {
+        return false;
+      }
+
+      return this.hasLaterElifOrElse(enclosingIfNode, parentNode);
+    }
+
+    return false;
+  }
+
+  /**
+   * Test if {@code ifNode} has an {@code _elif}/{@code _else} child after {@code afterNode}.
+   *
+   * <p>If {@code afterNode} is {@code null}, all {@code _elif}/{@code _else} children count.
+   */
+  private boolean hasLaterElifOrElse(final AstNode ifNode, @CheckForNull final AstNode afterNode) {
+    boolean pastReference = afterNode == null;
+    for (final AstNode child : ifNode.getChildren()) {
+      if (!pastReference) {
+        pastReference = child == afterNode;
+        continue;
+      }
+
+      // A later _elif/_else means the missing-value case is handled elsewhere.
+      if (child.is(MagikGrammar.ELIF) || child.is(MagikGrammar.ELSE)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   private void reportGuardedCalls(final AstNode equalityNode, final AstNode searchNode) {
