@@ -1,10 +1,21 @@
 <p>Inheritance cycle</p>
-<h2>Explanation</h2>
-<pre>
+<h2>Why is this an issue?</h2>
+<p>A type cannot legitimately inherit from itself, directly or indirectly. When two or more exemplars inherit from each other, forming a cycle, resolving methods/slots for any of the involved types is undefined. This cycle can be spread across separate files/modules, so neither file necessarily looks wrong on its own.</p>
+<h3>Code examples</h3>
+<h4>Non-compliant code example</h4>
+<pre data-diff-id="1" data-diff-type="noncompliant">
 def_slotted_exemplar(:child, {}, :parent)
 $
 
 def_slotted_exemplar(:parent, {}, :child)
 $
 </pre>
-<p>In the above example, <pre>child</pre> inherits from <pre>parent</pre>, and <pre>parent</pre> inherits from <pre>child</pre>. This cycle can be spread across separate files/modules, so neither file necessarily looks wrong on its own. A type cannot legitimately inherit from itself, directly or indirectly; resolving methods/slots for either type is undefined.</p>
+<h4>Compliant solution</h4>
+<pre data-diff-id="1" data-diff-type="compliant">
+def_slotted_exemplar(:child, {}, :parent)
+$
+
+def_slotted_exemplar(:parent, {})
+$
+</pre>
+<p><code>child</code> inherits from <code>parent</code>, but <code>parent</code> no longer inherits from <code>child</code>, breaking the cycle.</p>
