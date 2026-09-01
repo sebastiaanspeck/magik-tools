@@ -34,3 +34,18 @@ def_slotted_exemplar(
     {:slot1, _unset}
   })
 </pre>
+<h2>Non-compliant Code Example</h2>
+<pre data-diff-id="3" data-diff-type="noncompliant">
+_method object.get_value()
+  ## This method returns a value, but is missing @return documentation.
+  >> _true
+_endmethod
+</pre>
+<h2>Compliant Code Example</h2>
+<pre data-diff-id="3" data-diff-type="compliant">
+_method object.get_value()
+  ## This method returns a value.
+  ## @return {sw:false} True if successful, false if not.
+  >> _true
+_endmethod
+</pre>

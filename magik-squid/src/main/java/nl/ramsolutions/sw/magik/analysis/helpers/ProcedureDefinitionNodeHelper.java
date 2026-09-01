@@ -87,9 +87,12 @@ public class ProcedureDefinitionNodeHelper {
             .anyMatch(statementNode -> statementNode.hasDescendant(MagikGrammar.TUPLE));
 
     final boolean hasEmit =
-        this.node.getFirstChild(MagikGrammar.BODY).getChildren(MagikGrammar.STATEMENT).stream()
+        this.node.getFirstChild(MagikGrammar.BODY).getDescendants(MagikGrammar.EMIT_STATEMENT)
+            .stream()
             .anyMatch(
-                statementNode -> !statementNode.getChildren(MagikGrammar.EMIT_STATEMENT).isEmpty());
+                emitStatementNode ->
+                    emitStatementNode.getFirstAncestor(MagikGrammar.PROCEDURE_DEFINITION)
+                        == this.node);
 
     return hasReturn || hasEmit;
   }
