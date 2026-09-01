@@ -187,4 +187,34 @@ public class VariableRenamerTest {
                     new TextEdit(
                         new Range(new Position(5, 10), new Position(5, 16)), "newParam"))));
   }
+
+  @Test
+  void testRenameVariableWithNestedProcedureImport() throws IOException {
+    // Renaming a variable which is `_import`-ed into a nested procedure must also rename the
+    // usages of that variable inside the nested procedure's body, not just the declaration and
+    // the `_import` statement itself.
+    final String code =
+        """
+        _method a.b()
+            _local l_count << 1
+            _local q << _proc()
+                _import l_count
+                write(l_count)
+            _endproc
+            q()
+        _endmethod
+        """;
+    final Position position = new Position(2, 12); // On `l_count` declaration.
+
+    final VariableRenamer renamer = this.getRenamer(code, position);
+    final Map<URI, List<TextEdit>> renames = renamer.provideRename("count");
+    assertThat(renames)
+        .isEqualTo(
+            Map.of(
+                URI.create("memory:///source.magik"),
+                List.of(
+                    new TextEdit(new Range(new Position(2, 11), new Position(2, 18)), "count"),
+                    new TextEdit(new Range(new Position(4, 16), new Position(4, 23)), "count"),
+                    new TextEdit(new Range(new Position(5, 14), new Position(5, 21)), "count"))));
+  }
 }
