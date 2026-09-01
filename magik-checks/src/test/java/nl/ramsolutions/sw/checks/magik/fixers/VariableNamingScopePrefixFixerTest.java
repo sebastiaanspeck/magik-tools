@@ -88,4 +88,59 @@ class VariableNamingScopePrefixFixerTest {
     final List<CodeAction> codeActions = this.getCodeActions(code, true);
     assertThat(codeActions).isEmpty();
   }
+
+  @Test
+  void testRenamesUsageInNestedProcedureImport() {
+    // A variable which is `_import`-ed into a nested procedure gets a separate ScopeEntry for
+    // that import; usages inside the nested procedure's body must also be renamed.
+    final String code =
+        """
+        _method a.b()
+          _local l_count << 1
+          _local q << _proc()
+            _import l_count
+            write(l_count)
+          _endproc
+          q()
+        _endmethod
+        """;
+    final List<CodeAction> codeActions = this.getCodeActions(code, true);
+    assertThat(codeActions).hasSize(1);
+
+    final CodeAction codeAction = codeActions.get(0);
+    assertThat(codeAction.getTitle()).isEqualTo("Remove scope prefix from \"l_count\"");
+    assertThat(codeAction.getEdits()).hasSize(3);
+    assertThat(codeAction.getEdits())
+        .allSatisfy(edit -> assertThat(edit.getNewText()).isEqualTo("count"));
+  }
+
+  @Test
+  void testDoesNotOfferFixOnNameCollision() {
+    // Stripping the prefix from `l_count` would collide with the already-declared `count` in the
+    // same scope, so no (potentially behavior-changing) fix should be offered.
+    final String code =
+        """
+        _block
+          _local count << 0
+          _local l_count << 1
+          write(l_count)
+        _endblock
+        """;
+    final List<CodeAction> codeActions = this.getCodeActions(code, true);
+    assertThat(codeActions).isEmpty();
+  }
+
+  @Test
+  void testDoesNotOfferFixForBarePrefixIdentifier() {
+    // An identifier which is exactly a bare prefix would strip to an empty string; no fix should
+    // be offered for that.
+    final String code =
+        """
+        _method a.b(p_)
+          write(p_)
+        _endmethod
+        """;
+    final List<CodeAction> codeActions = this.getCodeActions(code, true);
+    assertThat(codeActions).isEmpty();
+  }
 }

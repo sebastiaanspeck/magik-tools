@@ -3,7 +3,6 @@ package nl.ramsolutions.sw.checks.magik.fixers;
 import com.sonar.sslr.api.AstNode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 import nl.ramsolutions.sw.MagikToolsProperties;
 import nl.ramsolutions.sw.checks.CheckHolder;
 import nl.ramsolutions.sw.checks.MagikCodeActionSupplier;
@@ -15,6 +14,7 @@ import nl.ramsolutions.sw.magik.TextEdit;
 import nl.ramsolutions.sw.magik.analysis.scope.GlobalScope;
 import nl.ramsolutions.sw.magik.analysis.scope.Scope;
 import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
+import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntryUtils;
 
 /**
  * Fixer for {@link VariableNamingCheck} scope-prefix issues.
@@ -22,6 +22,11 @@ import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
  * <p>Only active when {@link VariableNamingCheck#forbidScopePrefixes} is enabled for the file being
  * fixed: renames a scope-prefixed (p_/l_/i_/c_) variable or parameter, and all of its usages, to
  * the same name without the prefix.
+ *
+ * <p>Usage collection (including usages tied to nested {@code _import}s of the variable) is
+ * delegated to {@link ScopeEntryUtils#getRelatedNodes}, the same routine used by the
+ * language server's rename functionality (see {@code VariableRenamer}), to avoid duplicating that
+ * logic.
  */
 public class VariableNamingScopePrefixFixer extends MagikCodeActionSupplier {
 
@@ -58,8 +63,19 @@ public class VariableNamingScopePrefixFixer extends MagikCodeActionSupplier {
         }
 
         final String newName = VariableNamingCheck.stripScopePrefix(identifier);
+        if (newName.isEmpty()) {
+          // Identifier is a bare prefix (e.g. "p_"); renaming to an empty string is not valid.
+          continue;
+        }
+
+        if (scope.hasScopeEntry(newName)) {
+          // Renaming would collide with an existing declaration in scope; don't offer a
+          // (potentially behavior-changing) automatic fix for this occurrence.
+          continue;
+        }
+
         final List<TextEdit> textEdits =
-            Stream.concat(Stream.of(definitionNode), scopeEntry.getUsages().stream())
+            ScopeEntryUtils.getRelatedNodes(scopeEntry, globalScope).stream()
                 .map(Range::new)
                 .map(nodeRange -> new TextEdit(nodeRange, newName))
                 .toList();
