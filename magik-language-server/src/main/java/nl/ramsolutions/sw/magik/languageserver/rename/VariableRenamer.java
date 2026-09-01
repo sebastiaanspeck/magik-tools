@@ -8,13 +8,13 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Stream;
 import nl.ramsolutions.sw.magik.MagikTypedFile;
 import nl.ramsolutions.sw.magik.Range;
 import nl.ramsolutions.sw.magik.TextEdit;
 import nl.ramsolutions.sw.magik.analysis.scope.GlobalScope;
 import nl.ramsolutions.sw.magik.analysis.scope.Scope;
 import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
+import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntryUtils;
 import nl.ramsolutions.sw.magik.api.MagikGrammar;
 import nl.ramsolutions.sw.magik.languageserver.Lsp4jConversion;
 import nl.ramsolutions.sw.magik.parser.TypeDocParser;
@@ -67,13 +67,9 @@ class VariableRenamer extends Renamer {
     final AstNode definitionNode = scopeEntry.getDefinitionNode();
     final List<TextEdit> textEdits = new ArrayList<>();
 
-    // Add variable usage edits.
-    Stream.concat(Stream.of(definitionNode), scopeEntry.getUsages().stream())
-        .map(
-            renameNode ->
-                renameNode.isNot(MagikGrammar.IDENTIFIER)
-                    ? renameNode.getFirstChild(MagikGrammar.IDENTIFIER)
-                    : renameNode)
+    // Add variable usage edits, including usages tied to nested `_import`s of this variable.
+    final GlobalScope globalScope = magikFile.getGlobalScope();
+    ScopeEntryUtils.getRelatedNodes(scopeEntry, globalScope).stream()
         .map(Range::new)
         .map(range -> new TextEdit(range, newName))
         .forEach(textEdits::add);
