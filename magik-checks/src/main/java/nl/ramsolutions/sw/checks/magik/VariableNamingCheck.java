@@ -25,6 +25,7 @@ public class VariableNamingCheck extends MagikCheck {
   private static final String DEFAULT_WHITELIST = "x,y,z,id";
   private static final boolean DEFAULT_FORBID_SCOPE_PREFIXES = false;
   private static final String SCOPE_PREFIXES = "p_,l_,i_,c_";
+  private static final List<String> SCOPE_PREFIX_ITEMS = List.of(SCOPE_PREFIXES.split(","));
 
   @SuppressWarnings("checkstyle:JavadocVariable")
   public static final String PROPERTY_KEY_FORBID_SCOPE_PREFIXES = "forbid scope prefixes";
@@ -77,12 +78,13 @@ public class VariableNamingCheck extends MagikCheck {
           final String identifier = scopeEntry.getIdentifier();
           final AstNode identifierNode = scopeEntry.getDefinitionNode();
 
+          // Report at most one issue per identifier: an invalid (post-strip) name is the more
+          // fundamental problem (removing the scope prefix alone would not fix it), so prefer
+          // that message over the scope-prefix message.
           if (!this.isValidName(identifier)) {
             final String message = MESSAGE.formatted(identifier);
             this.addIssue(identifierNode, message);
-          }
-
-          if (this.forbidScopePrefixes && VariableNamingCheck.hasScopePrefix(identifier)) {
+          } else if (this.forbidScopePrefixes && VariableNamingCheck.hasScopePrefix(identifier)) {
             final String message = MESSAGE_SCOPE_PREFIX.formatted(identifier);
             this.addIssue(identifierNode, message);
           }
@@ -117,7 +119,7 @@ public class VariableNamingCheck extends MagikCheck {
   }
 
   private static List<String> getScopePrefixItems() {
-    return List.of(SCOPE_PREFIXES.split(","));
+    return SCOPE_PREFIX_ITEMS;
   }
 
   private boolean isValidName(final String identifier) {

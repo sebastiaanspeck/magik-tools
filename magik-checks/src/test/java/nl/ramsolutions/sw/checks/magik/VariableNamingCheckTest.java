@@ -214,4 +214,19 @@ class VariableNamingCheckTest {
         """;
     assertThat(check).reportsNoIssues(code);
   }
+
+  @Test
+  void testScopePrefixDoesNotDoubleReportWhenAlsoInvalidName() {
+    // "p_ab" is scope-prefixed AND, after stripping the prefix, "ab" is still too short to be a
+    // valid name. Only one issue should be reported for the identifier, not two.
+    final VariableNamingCheck check = new VariableNamingCheck();
+    check.forbidScopePrefixes = true;
+    final String code =
+        """
+        _block
+          _local p_ab
+        _endblock
+        """;
+    assertThat(check).reportsIssueCount(code, 1);
+  }
 }
