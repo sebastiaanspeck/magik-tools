@@ -72,6 +72,7 @@ class TypeDocCheckTest {
         """,
         """
         _method a.m1()
+          ## @return {sw:integer} Result.
           a << _if b = c
                _then >> 1
                _endif
@@ -162,6 +163,13 @@ class TypeDocCheckTest {
           _proc()
             _return 1
           _endproc
+        _endmethod
+        """,
+        """
+        _method a.m1()
+          a << _if b = c
+               _then >> 1
+               _endif
         _endmethod
         """,
         """

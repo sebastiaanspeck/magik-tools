@@ -43,4 +43,64 @@ class ProcedureDefinitionNodeHelperTest {
     final Map<String, AstNode> parameterNodes = helper.getParameterNodes();
     assertThat(parameterNodes).containsOnlyKeys("p1");
   }
+
+  @Test
+  void testReturnsAnythingDirectEmit() {
+    final String code =
+        """
+        _proc()
+          >> 1
+        _endproc
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode procNode = topNode.getFirstDescendant(MagikGrammar.PROCEDURE_DEFINITION);
+    final ProcedureDefinitionNodeHelper helper = new ProcedureDefinitionNodeHelper(procNode);
+    assertThat(helper.returnsAnything()).isTrue();
+  }
+
+  @Test
+  void testReturnsAnythingEmitNestedInExpression() {
+    final String code =
+        """
+        _proc()
+          a << _if b = c
+               _then >> 1
+               _endif
+        _endproc
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode procNode = topNode.getFirstDescendant(MagikGrammar.PROCEDURE_DEFINITION);
+    final ProcedureDefinitionNodeHelper helper = new ProcedureDefinitionNodeHelper(procNode);
+    assertThat(helper.returnsAnything()).isTrue();
+  }
+
+  @Test
+  void testReturnsAnythingEmitOnlyInNestedProcedure() {
+    final String code =
+        """
+        _proc()
+          _proc()
+            >> 1
+          _endproc
+        _endproc
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode procNode = topNode.getFirstDescendant(MagikGrammar.PROCEDURE_DEFINITION);
+    final ProcedureDefinitionNodeHelper helper = new ProcedureDefinitionNodeHelper(procNode);
+    assertThat(helper.returnsAnything()).isFalse();
+  }
+
+  @Test
+  void testReturnsAnythingNoReturnOrEmit() {
+    final String code =
+        """
+        _proc()
+          _local a << 1
+        _endproc
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode procNode = topNode.getFirstDescendant(MagikGrammar.PROCEDURE_DEFINITION);
+    final ProcedureDefinitionNodeHelper helper = new ProcedureDefinitionNodeHelper(procNode);
+    assertThat(helper.returnsAnything()).isFalse();
+  }
 }

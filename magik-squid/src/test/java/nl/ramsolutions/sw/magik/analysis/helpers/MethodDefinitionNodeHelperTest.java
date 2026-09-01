@@ -43,4 +43,64 @@ class MethodDefinitionNodeHelperTest {
     final Map<String, AstNode> parameterNodes = helper.getParameterNodes();
     assertThat(parameterNodes).containsOnlyKeys("p1");
   }
+
+  @Test
+  void testReturnsAnythingDirectEmit() {
+    final String code =
+        """
+        _method a.m1()
+          >> 1
+        _endmethod
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode methodNode = topNode.getFirstDescendant(MagikGrammar.METHOD_DEFINITION);
+    final MethodDefinitionNodeHelper helper = new MethodDefinitionNodeHelper(methodNode);
+    assertThat(helper.returnsAnything()).isTrue();
+  }
+
+  @Test
+  void testReturnsAnythingEmitNestedInExpression() {
+    final String code =
+        """
+        _method a.m1()
+          a << _if b = c
+               _then >> 1
+               _endif
+        _endmethod
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode methodNode = topNode.getFirstDescendant(MagikGrammar.METHOD_DEFINITION);
+    final MethodDefinitionNodeHelper helper = new MethodDefinitionNodeHelper(methodNode);
+    assertThat(helper.returnsAnything()).isTrue();
+  }
+
+  @Test
+  void testReturnsAnythingEmitOnlyInNestedProcedure() {
+    final String code =
+        """
+        _method a.m1()
+          _proc()
+            >> 1
+          _endproc
+        _endmethod
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode methodNode = topNode.getFirstDescendant(MagikGrammar.METHOD_DEFINITION);
+    final MethodDefinitionNodeHelper helper = new MethodDefinitionNodeHelper(methodNode);
+    assertThat(helper.returnsAnything()).isFalse();
+  }
+
+  @Test
+  void testReturnsAnythingNoReturnOrEmit() {
+    final String code =
+        """
+        _method a.m1()
+          _local a << 1
+        _endmethod
+        """;
+    final AstNode topNode = this.parseMagik(code);
+    final AstNode methodNode = topNode.getFirstDescendant(MagikGrammar.METHOD_DEFINITION);
+    final MethodDefinitionNodeHelper helper = new MethodDefinitionNodeHelper(methodNode);
+    assertThat(helper.returnsAnything()).isFalse();
+  }
 }
