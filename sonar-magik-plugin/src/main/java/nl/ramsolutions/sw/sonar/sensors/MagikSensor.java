@@ -62,11 +62,7 @@ public class MagikSensor extends AbstractMagikFamilySensor<MagikFile> {
 
   @Override
   protected void saveMetrics(
-      final SensorContext context,
-      final InputFile inputFile,
-      final MagikFile file,
-      final FileLinesContextFactory fileLinesContextFactory,
-      final NoSonarFilter noSonarFilter) {
+      final SensorContext context, final InputFile inputFile, final MagikFile file) {
     final FileMetrics metrics = new FileMetrics(file, true);
 
     saveMetric(context, inputFile, CoreMetrics.NCLOC, metrics.linesOfCode().size());
@@ -80,7 +76,7 @@ public class MagikSensor extends AbstractMagikFamilySensor<MagikFile> {
     saveMetric(context, inputFile, CoreMetrics.STATEMENTS, metrics.numberOfStatements());
     saveMetric(context, inputFile, CoreMetrics.COMPLEXITY, metrics.fileComplexity());
 
-    final FileLinesContext fileLinesContext = fileLinesContextFactory.createFor(inputFile);
+    final FileLinesContext fileLinesContext = this.fileLinesContextFactory.createFor(inputFile);
     metrics
         .linesOfCode()
         .forEach(line -> fileLinesContext.setIntValue(CoreMetrics.NCLOC_DATA_KEY, line, 1));
@@ -90,7 +86,7 @@ public class MagikSensor extends AbstractMagikFamilySensor<MagikFile> {
             line -> fileLinesContext.setIntValue(CoreMetrics.EXECUTABLE_LINES_DATA_KEY, line, 1));
     fileLinesContext.save();
 
-    noSonarFilter.noSonarInFile(inputFile, metrics.nosonarLines());
+    this.noSonarFilter.noSonarInFile(inputFile, metrics.nosonarLines());
   }
 
   @Override

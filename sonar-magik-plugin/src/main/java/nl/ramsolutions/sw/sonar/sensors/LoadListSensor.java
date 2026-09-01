@@ -64,23 +64,19 @@ public class LoadListSensor extends AbstractMagikFamilySensor<LoadListFile> {
 
   @Override
   protected void saveMetrics(
-      final SensorContext context,
-      final InputFile inputFile,
-      final LoadListFile file,
-      final FileLinesContextFactory fileLinesContextFactory,
-      final NoSonarFilter noSonarFilter) {
+      final SensorContext context, final InputFile inputFile, final LoadListFile file) {
     final FileMetrics metrics = new FileMetrics(file, true);
 
     saveMetric(context, inputFile, CoreMetrics.NCLOC, metrics.linesOfEntries().size());
     saveMetric(context, inputFile, CoreMetrics.COMMENT_LINES, metrics.commentLineCount());
 
-    final FileLinesContext fileLinesContext = fileLinesContextFactory.createFor(inputFile);
+    final FileLinesContext fileLinesContext = this.fileLinesContextFactory.createFor(inputFile);
     metrics
         .linesOfEntries()
         .forEach(line -> fileLinesContext.setIntValue(CoreMetrics.NCLOC_DATA_KEY, line, 1));
     fileLinesContext.save();
 
-    noSonarFilter.noSonarInFile(inputFile, metrics.nosonarLines());
+    this.noSonarFilter.noSonarInFile(inputFile, metrics.nosonarLines());
   }
 
   @Override

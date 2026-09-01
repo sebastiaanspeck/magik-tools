@@ -44,8 +44,8 @@ public abstract class AbstractMagikFamilySensor<F extends OpenedFile> implements
   private static final long SLEEP_PERIOD = 100;
 
   private final CheckFactory checkFactory;
-  private final FileLinesContextFactory fileLinesContextFactory;
-  private final NoSonarFilter noSonarFilter;
+  protected final FileLinesContextFactory fileLinesContextFactory;
+  protected final NoSonarFilter noSonarFilter;
 
   protected AbstractMagikFamilySensor(
       final CheckFactory checkFactory,
@@ -75,12 +75,7 @@ public abstract class AbstractMagikFamilySensor<F extends OpenedFile> implements
 
   protected abstract F parseFile(URI uri, String content);
 
-  protected abstract void saveMetrics(
-      SensorContext context,
-      InputFile inputFile,
-      F file,
-      FileLinesContextFactory fileLinesContextFactory,
-      NoSonarFilter noSonarFilter);
+  protected abstract void saveMetrics(SensorContext context, InputFile inputFile, F file);
 
   protected abstract void saveHighlighting(SensorContext context, InputFile inputFile, F file);
 
@@ -133,7 +128,7 @@ public abstract class AbstractMagikFamilySensor<F extends OpenedFile> implements
     final F file = this.parseFile(uri, fileContent);
 
     LOGGER.debug("Save measures");
-    this.saveMetrics(context, inputFile, file, this.fileLinesContextFactory, this.noSonarFilter);
+    this.saveMetrics(context, inputFile, file);
 
     LOGGER.debug("Running checks");
     final Checks<Check> checks =

@@ -67,11 +67,7 @@ public class ProductDefSensor extends AbstractMagikFamilySensor<ProductDefFile> 
 
   @Override
   protected void saveMetrics(
-      final SensorContext context,
-      final InputFile inputFile,
-      final ProductDefFile file,
-      final FileLinesContextFactory fileLinesContextFactory,
-      final NoSonarFilter noSonarFilter) {
+      final SensorContext context, final InputFile inputFile, final ProductDefFile file) {
     final FileMetrics metrics = new FileMetrics(file, true);
 
     saveMetric(context, inputFile, CoreMetrics.NCLOC, metrics.linesOfDefinition().size());
@@ -80,13 +76,13 @@ public class ProductDefSensor extends AbstractMagikFamilySensor<ProductDefFile> 
     // TODO: Do we really want this?
     saveMetric(context, inputFile, CoreMetrics.CLASSES, 1);
 
-    final FileLinesContext fileLinesContext = fileLinesContextFactory.createFor(inputFile);
+    final FileLinesContext fileLinesContext = this.fileLinesContextFactory.createFor(inputFile);
     metrics
         .linesOfDefinition()
         .forEach(line -> fileLinesContext.setIntValue(CoreMetrics.NCLOC_DATA_KEY, line, 1));
     fileLinesContext.save();
 
-    noSonarFilter.noSonarInFile(inputFile, metrics.nosonarLines());
+    this.noSonarFilter.noSonarInFile(inputFile, metrics.nosonarLines());
   }
 
   @Override
