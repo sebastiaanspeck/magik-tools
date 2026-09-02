@@ -39,10 +39,11 @@ final class RcFileGenerator {
   /** Result of {@link #generate}. */
   record GenerationResult(String contents, List<String> warnings) {}
 
+  // magiktyped checks aren't registered under any SonarQube profile, so no mapping is given for
+  // them here: languageOf() should fail loudly rather than silently bucket one under "magik".
   private static final Map<String, String> LANGUAGE_BY_PACKAGE =
       Map.of(
           "nl.ramsolutions.sw.checks.magik", "magik",
-          "nl.ramsolutions.sw.checks.magiktyped", "magik",
           "nl.ramsolutions.sw.checks.productdef", "product_module_def",
           "nl.ramsolutions.sw.checks.moduledef", "product_module_def",
           "nl.ramsolutions.sw.checks.loadlist", "load_list");

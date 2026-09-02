@@ -1,6 +1,7 @@
 package nl.ramsolutions.sw.magik.lint;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.List;
 import java.util.Map;
@@ -10,6 +11,7 @@ import java.util.stream.Stream;
 import nl.ramsolutions.sw.checks.Check;
 import nl.ramsolutions.sw.checks.LoadListCheckList;
 import nl.ramsolutions.sw.checks.MagikCheckList;
+import nl.ramsolutions.sw.checks.MagikTypedCheckList;
 import org.junit.jupiter.api.Test;
 
 class RcFileGeneratorTest {
@@ -149,5 +151,21 @@ class RcFileGeneratorTest {
               assertThat(warning).contains("old removed param");
               assertThat(warning).contains("line-length");
             });
+  }
+
+  @Test
+  void testMagikTypedCheckIsRejectedRatherThanSilentlyBucketedUnderMagik() {
+    // magik-lint's own Utils.getChecks() never yields magiktyped classes (they belong to the
+    // separate magik-typedlint tool, and aren't registered under any SonarQube language/profile
+    // at all), so RcFileGenerator must not have a mapping that would silently bucket one under
+    // "magik" if it were ever fed in by mistake: it should fail loudly instead of force-disabling
+    // typed checks the moment a "magik" profile is supplied.
+    final List<Class<? extends Check>> allChecks = MagikTypedCheckList.INSTANCE.getBaseChecks();
+    final Map<String, List<ActiveRule>> activeRulesByLanguage =
+        Map.of("magik", List.of(new ActiveRule("SyntaxError", Map.of())));
+
+    assertThatThrownBy(() -> RcFileGenerator.generate(allChecks, activeRulesByLanguage))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("magiktyped");
   }
 }
