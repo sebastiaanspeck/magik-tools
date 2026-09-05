@@ -1,0 +1,30 @@
+<p>A method should not be made <code>_private</code> when an ancestor defines it as public.</p>
+<h2>Non-compliant Code Example</h2>
+<pre data-diff-id="1" data-diff-type="noncompliant">
+_method parent.name
+    >> :parent
+_endmethod
+$
+
+_private _method child.name
+    >> :child
+_endmethod
+</pre>
+<h2>Compliant Code Example</h2>
+<pre data-diff-id="1" data-diff-type="compliant">
+_method parent.name
+    >> :parent
+_endmethod
+$
+
+_method child.name
+    >> :child
+_endmethod
+</pre>
+<p>
+  Code that holds a reference typed as <code>parent</code> can call <code>name</code> without
+  knowing it actually received a <code>child</code>. Making the overriding method private breaks
+  that contract: the call compiles against the ancestor's public method, but fails at runtime with
+  a "not accessible" error, violating the Liskov Substitution Principle.
+</p>
+<p>This mirrors SonarQube's S2638 rule ("visibility should not be reduced").</p>

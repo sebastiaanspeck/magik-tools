@@ -18,6 +18,7 @@ import nl.ramsolutions.sw.checks.magiktyped.InvocationArgumentTypeMatchesParamet
 import nl.ramsolutions.sw.checks.magiktyped.IterCallableYieldTypesMatchDocTypedCheck;
 import nl.ramsolutions.sw.checks.magiktyped.MethodExistsTypedCheck;
 import nl.ramsolutions.sw.checks.magiktyped.MethodIsPublicTypedCheck;
+import nl.ramsolutions.sw.checks.magiktyped.MethodVisibilityNotReducedTypedCheck;
 import nl.ramsolutions.sw.checks.magiktyped.ModuleRequiredForGlobalTypedCheck;
 import nl.ramsolutions.sw.checks.magiktyped.MultipleAssignmentCountMismatchTypedCheck;
 import nl.ramsolutions.sw.checks.magiktyped.SlotDefaultValueMatchesTypeDocTypedCheck;
@@ -68,6 +69,7 @@ public final class MagikTypedCheckList extends CheckList<MagikCheck, MagikTypedC
         InvocationArgumentTypeMatchesParameterTypeTypedCheck.class,
         MethodExistsTypedCheck.class,
         MethodIsPublicTypedCheck.class,
+        MethodVisibilityNotReducedTypedCheck.class,
         MultipleAssignmentCountMismatchTypedCheck.class,
         CallableReturnTypesMatchDocTypedCheck.class,
         ModuleRequiredForGlobalTypedCheck.class,

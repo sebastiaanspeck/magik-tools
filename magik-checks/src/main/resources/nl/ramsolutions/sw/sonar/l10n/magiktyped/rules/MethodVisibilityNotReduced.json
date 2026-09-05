@@ -1,0 +1,16 @@
+{
+  "title": "Method visibility not reduced",
+  "type": "BUG",
+  "status": "ready",
+  "remediation": {
+    "func": "Constant\/Issue",
+    "constantCost": "15min"
+  },
+  "tags": [
+    "bug",
+    "typing"
+  ],
+  "defaultSeverity": "Major",
+  "ruleSpecification": "MethodVisibilityNotReduced",
+  "sqKey": "method-visibility-not-reduced"
+}
