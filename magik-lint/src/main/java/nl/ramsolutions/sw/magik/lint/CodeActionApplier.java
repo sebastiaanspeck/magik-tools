@@ -64,7 +64,7 @@ public class CodeActionApplier {
     final int column = position.getColumn();
 
     int currentLine = 1;
-    int index = 0;
+    int index = -1;
     // Find first line index.
     while (index < source.length()) {
       if (currentLine == line) {
@@ -72,7 +72,7 @@ public class CodeActionApplier {
       }
 
       // Find next newline character.
-      final int nextIndex = source.indexOf("\n", index == 0 ? 0 : index + 1);
+      final int nextIndex = source.indexOf("\n", index + 1);
       if (nextIndex == -1) {
         // Apparently at EOF, lets not crash and just take the end of the string.
         return source.length();

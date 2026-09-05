@@ -51,4 +51,18 @@ class CodeActionApplierTest {
     final String newSource = codeActionApplier.getSource();
     assertThat(newSource).isEqualTo("New line!\nHello, world!\nNew line!\n");
   }
+
+  @Test
+  void testApplyCodeActionOnFileWithLeadingBlankLine() {
+    // A leading blank line means the first newline sits at index 0, which used to be
+    // mistaken for the "search not started yet" sentinel, breaking the walk to later lines.
+    final String source = "\nline2\nline3\nline4\n";
+    final CodeActionApplier codeActionApplier = new CodeActionApplier(source);
+    codeActionApplier.apply(
+        new CodeAction(
+            "test fix",
+            new TextEdit(new Range(new Position(4, 0), new Position(4, 0)), "X")));
+    final String newSource = codeActionApplier.getSource();
+    assertThat(newSource).isEqualTo("\nline2\nline3\nXline4\n");
+  }
 }
