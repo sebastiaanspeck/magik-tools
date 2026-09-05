@@ -36,9 +36,14 @@ public final class ConfigurationLocator {
 
   /**
    * Locate the configuration. Steps, in order: 1. magik-lint.properties in the current directory 2.
-   * magik-lint.properties in any upper Smallworld product or module. 3. The file named by
-   * environment variable MAGIKLINTRC 4. .magik-lint.properties in your home directory 5.
-   * .magik-lint.properties in the System property `user.home` 6. /etc/magik-lint.properties
+   * magik-lint.properties in any upper Smallworld product or module 3. magik-lint.properties in the
+   * root of the enclosing Git repository (nearest ancestor directory containing a {@code .git} entry)
+   * -- this is checked after the product/module search (which takes priority when both apply) but
+   * before the more global/user-level fallbacks below, since a mono-repo containing multiple
+   * Smallworld products without a product.def/module.def at its root is still project-scoped
+   * configuration, not a global default. 4. The file named by environment variable MAGIKLINTRC 5.
+   * .magik-lint.properties in your home directory 6. .magik-lint.properties in the System property
+   * `user.home` 7. /etc/magik-lint.properties
    *
    * @param searchPath Path to start looking from, a directory.
    * @return Return the path to the configuration to use.
@@ -65,11 +70,18 @@ public final class ConfigurationLocator {
       return currentDirPath;
     }
 
-    // 3. In any upper Smallworld product.
+    // 2. In any upper Smallworld product.
     final Path productDirPath = ConfigurationLocator.inProductDir(searchPath);
     if (productDirPath != null) {
       ConfigurationLocator.CACHE.put(searchPath, productDirPath);
       return productDirPath;
+    }
+
+    // 3. In the root of the enclosing Git repository.
+    final Path gitRepoRootPath = ConfigurationLocator.inGitRepoRootDir(searchPath);
+    if (gitRepoRootPath != null) {
+      ConfigurationLocator.CACHE.put(searchPath, gitRepoRootPath);
+      return gitRepoRootPath;
     }
 
     // 4. In env var MAGIKLINTRC.
@@ -153,6 +165,43 @@ public final class ConfigurationLocator {
       if (Files.exists(path)) {
         return path;
       }
+    }
+
+    return null;
+  }
+
+  @CheckForNull
+  private static Path inGitRepoRootDir(final Path searchPath) {
+    final Path gitRepoRootDir = ConfigurationLocator.locateGitRepoRootDir(searchPath);
+    if (gitRepoRootDir == null) {
+      return null;
+    }
+
+    final Path path = gitRepoRootDir.resolve(MAGIK_LINT_RC_FILENAME);
+    LOGGER.trace("Trying to get config at (3): {}", path.toAbsolutePath());
+    if (Files.exists(path)) {
+      return path;
+    }
+
+    return null;
+  }
+
+  @CheckForNull
+  private static Path locateGitRepoRootDir(final Path searchPath) {
+    Path path = searchPath.toAbsolutePath();
+    LOGGER.trace("Locating .git in path (3): {}", path);
+
+    while (path != null && Files.exists(path)) {
+      // Test if a .git entry (directory for a normal checkout, or file for a worktree/submodule)
+      // exists.
+      final Path gitPath = path.resolve(".git");
+      LOGGER.trace(".git path (3): {}", gitPath);
+      if (Files.exists(gitPath)) {
+        LOGGER.trace("Found .git, using path: {}", path);
+        return path;
+      }
+
+      path = path.getParent();
     }
 
     return null;
