@@ -1,0 +1,98 @@
+name: Snapshot pre-release
+
+on:
+  push:
+    branches:
+      - snapshot-release
+
+jobs:
+  check-snapshot:
+    name: Check version is a SNAPSHOT
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      is_snapshot: ${{ steps.check.outputs.is_snapshot }}
+      version: ${{ steps.check.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: 'zulu'
+          cache: 'maven'
+
+      - name: Read version from root pom.xml
+        id: check
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          if [[ "$VERSION" == *-SNAPSHOT ]]; then
+            echo "is_snapshot=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_snapshot=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  release:
+    name: Package and publish snapshot pre-release
+    needs: check-snapshot
+    if: needs.check-snapshot.outputs.is_snapshot == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    env:
+      VERSION: ${{ needs.check-snapshot.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
+        with:
+          java-version: 17
+          distribution: 'zulu'
+          cache: 'maven'
+
+      - name: Cache Maven packages
+        uses: actions/cache@v6
+        with:
+          path: ~/.m2
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-m2
+
+      - name: Test and package
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: mvn --batch-mode --update-snapshots verify test package
+
+      - run: mkdir -v staging && cp -v **/target/*.jar staging
+
+      - run: npm install . && npm run package
+        working-directory: magik-language-server/client-vscode
+
+      - run: cp -v magik-language-server/client-vscode/magik-language-server-*.vsix staging
+
+      - run: rm -vf staging/original-*.jar
+
+      - name: Delete previous snapshot release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release delete "$VERSION" --yes --cleanup-tag 2>/dev/null || true
+
+      - name: Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: ${{ env.VERSION }}
+          prerelease: true
+          target_commitish: snapshot-release
+          body: "⚠️ Pre-release snapshot build — not for production use."
+          files: |
+            staging/*
