@@ -96,52 +96,14 @@ final class RcFileGenerator {
     final List<String> disabled = new ArrayList<>();
     final List<String> parameterLines = new ArrayList<>();
     for (final Class<? extends Check> checkClass : allChecks) {
-      final Rule rule = checkClass.getAnnotation(Rule.class);
-      final String kebabKey = CheckHolder.toKebabCase(rule.key());
-      final String language = RcFileGenerator.languageOf(checkClass);
-      final boolean profileSuppliedForLanguage = activeRulesByLanguage.containsKey(language);
-      final Map<String, ActiveRule> activeForLanguage =
-          activeByLanguageAndKebabKey.getOrDefault(language, Map.of());
-      final ActiveRule activeRule = activeForLanguage.get(kebabKey);
-      final boolean activeInProfile = activeRule != null;
-      final boolean disabledByDefault = checkClass.getAnnotation(DisabledByDefault.class) != null;
-
-      if (profileSuppliedForLanguage && activeInProfile == disabledByDefault) {
-        // Differs from the code-side default: needs an explicit override.
-        if (activeInProfile) {
-          enabled.add(kebabKey);
-        } else {
-          disabled.add(kebabKey);
-        }
-      }
-
-      if (!activeInProfile) {
-        continue;
-      }
-
-      activeRule.parameters().entrySet().stream()
-          .filter(entry -> !"null".equalsIgnoreCase(entry.getValue()))
-          .forEach(
-              entry -> {
-                final String defaultValue =
-                    RcFileGenerator.findDefaultValue(checkClass, entry.getKey());
-                if (defaultValue == null) {
-                  warnings.add(
-                      "Unknown parameter '"
-                          + entry.getKey()
-                          + "' for check '"
-                          + kebabKey
-                          + "': no matching @RuleProperty was found, skipping.");
-                  return;
-                }
-
-                if (entry.getValue().equals(defaultValue)) {
-                  return;
-                }
-
-                final String parameterKey = entry.getKey().replace(" ", "-");
-                parameterLines.add(kebabKey + "." + parameterKey + "=" + entry.getValue());
-              });
+      RcFileGenerator.collectOverridesAndParameters(
+          checkClass,
+          activeRulesByLanguage,
+          activeByLanguageAndKebabKey,
+          enabled,
+          disabled,
+          parameterLines,
+          warnings);
     }
 
     final StringBuilder output = new StringBuilder();
@@ -154,6 +116,75 @@ final class RcFileGenerator {
     parameterLines.forEach(line -> output.append(line).append('\n'));
 
     return new GenerationResult(output.toString(), warnings);
+  }
+
+  /**
+   * Determine the enabled/disabled override and any parameter overrides for a single check, and
+   * append them to the given accumulator lists.
+   *
+   * @param checkClass Check class to process.
+   * @param activeRulesByLanguage Active rules, keyed by SonarQube language.
+   * @param activeByLanguageAndKebabKey {@link #generate}'s active rules, indexed by language and
+   *     kebab-cased rule key.
+   * @param enabled Accumulator for checks that need an explicit {@code enabled} override.
+   * @param disabled Accumulator for checks that need an explicit {@code disabled} override.
+   * @param parameterLines Accumulator for {@code <check>.<parameter>=<value>} override lines.
+   * @param warnings Accumulator for warnings about unknown parameters.
+   */
+  private static void collectOverridesAndParameters(
+      final Class<? extends Check> checkClass,
+      final Map<String, List<ActiveRule>> activeRulesByLanguage,
+      final Map<String, Map<String, ActiveRule>> activeByLanguageAndKebabKey,
+      final List<String> enabled,
+      final List<String> disabled,
+      final List<String> parameterLines,
+      final List<String> warnings) {
+    final Rule rule = checkClass.getAnnotation(Rule.class);
+    final String kebabKey = CheckHolder.toKebabCase(rule.key());
+    final String language = RcFileGenerator.languageOf(checkClass);
+    final boolean profileSuppliedForLanguage = activeRulesByLanguage.containsKey(language);
+    final Map<String, ActiveRule> activeForLanguage =
+        activeByLanguageAndKebabKey.getOrDefault(language, Map.of());
+    final ActiveRule activeRule = activeForLanguage.get(kebabKey);
+    final boolean activeInProfile = activeRule != null;
+    final boolean disabledByDefault = checkClass.getAnnotation(DisabledByDefault.class) != null;
+
+    if (profileSuppliedForLanguage && activeInProfile == disabledByDefault) {
+      // Differs from the code-side default: needs an explicit override.
+      if (activeInProfile) {
+        enabled.add(kebabKey);
+      } else {
+        disabled.add(kebabKey);
+      }
+    }
+
+    if (!activeInProfile) {
+      return;
+    }
+
+    activeRule.parameters().entrySet().stream()
+        .filter(entry -> !"null".equalsIgnoreCase(entry.getValue()))
+        .forEach(
+            entry -> {
+              final String defaultValue =
+                  RcFileGenerator.findDefaultValue(checkClass, entry.getKey());
+              if (defaultValue == null) {
+                warnings.add(
+                    "Unknown parameter '"
+                        + entry.getKey()
+                        + "' for check '"
+                        + kebabKey
+                        + "': no matching @RuleProperty was found, skipping.");
+                return;
+              }
+
+              if (entry.getValue().equals(defaultValue)) {
+                return;
+              }
+
+              final String parameterKey = entry.getKey().replace(" ", "-");
+              parameterLines.add(kebabKey + "." + parameterKey + "=" + entry.getValue());
+            });
   }
 
   /**
