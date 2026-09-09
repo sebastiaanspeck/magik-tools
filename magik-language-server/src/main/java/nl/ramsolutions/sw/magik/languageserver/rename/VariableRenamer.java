@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 import nl.ramsolutions.sw.magik.MagikTypedFile;
@@ -17,6 +18,7 @@ import nl.ramsolutions.sw.magik.analysis.scope.Scope;
 import nl.ramsolutions.sw.magik.analysis.scope.ScopeEntry;
 import nl.ramsolutions.sw.magik.api.MagikGrammar;
 import nl.ramsolutions.sw.magik.languageserver.Lsp4jConversion;
+import nl.ramsolutions.sw.magik.parser.SwMethodDocParser;
 import nl.ramsolutions.sw.magik.parser.TypeDocParser;
 import org.eclipse.lsp4j.PrepareRenameResult;
 
@@ -78,11 +80,15 @@ class VariableRenamer extends Renamer {
         .map(range -> new TextEdit(range, newName))
         .forEach(textEdits::add);
 
-    // Also rename in type doc.
+    // Also rename in type doc / sw method doc.
     if (scopeEntry.isType(ScopeEntry.Type.PARAMETER)) {
       final String oldName = definitionNode.getTokenOriginalValue();
       final List<TextEdit> typeDocEdits = this.getTypeDocEdits(definitionNode, oldName, newName);
       textEdits.addAll(typeDocEdits);
+
+      final List<TextEdit> swMethodDocEdits =
+          this.getSwMethodDocEdits(definitionNode, oldName, newName);
+      textEdits.addAll(swMethodDocEdits);
     }
 
     // Sort edits by position (line, then column).
@@ -145,6 +151,40 @@ class VariableRenamer extends Renamer {
         .map(Map.Entry::getKey)
         .map(Range::new)
         .map(range -> new TextEdit(range, newName))
+        .toList();
+  }
+
+  /**
+   * Get text edits for renaming parameter in SW-style method doc, i.e., free-form doc comments
+   * referencing the parameter by its upper-cased name.
+   *
+   * @param definitionNode The parameter definition node.
+   * @param oldName The old parameter name.
+   * @param newName The new parameter name.
+   * @return List of text edits for sw method doc parameter references.
+   */
+  private List<TextEdit> getSwMethodDocEdits(
+      final AstNode definitionNode, final String oldName, final String newName) {
+    // Find the parent method/procedure definition node.
+    final AstNode methodNode =
+        definitionNode.getFirstAncestor(
+            MagikGrammar.METHOD_DEFINITION, MagikGrammar.PROCEDURE_DEFINITION);
+    if (methodNode == null) {
+      return Collections.emptyList();
+    }
+
+    final String oldNameUpper = oldName.toUpperCase(Locale.ROOT);
+    final String newNameUpper = newName.toUpperCase(Locale.ROOT);
+
+    // Parse the sw method doc for the method/procedure.
+    final SwMethodDocParser swMethodDocParser = new SwMethodDocParser(methodNode);
+    final Map<Range, String> parameterNameRanges = swMethodDocParser.getParameterNameRanges();
+
+    // Find parameter name references matching the old (upper-cased) name and create text edits.
+    return parameterNameRanges.entrySet().stream()
+        .filter(entry -> entry.getValue().equals(oldNameUpper))
+        .map(Map.Entry::getKey)
+        .map(range -> new TextEdit(range, newNameUpper))
         .toList();
   }
 }

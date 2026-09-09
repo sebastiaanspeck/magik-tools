@@ -6,13 +6,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import nl.ramsolutions.sw.checks.DisabledByDefault;
 import nl.ramsolutions.sw.checks.MagikCheck;
 import nl.ramsolutions.sw.magik.analysis.helpers.MethodDefinitionNodeHelper;
 import nl.ramsolutions.sw.magik.api.MagikGrammar;
 import nl.ramsolutions.sw.magik.parser.MagikCommentExtractor;
+import nl.ramsolutions.sw.magik.parser.SwMethodDocParser;
 import org.sonar.check.Rule;
 import org.sonar.check.RuleProperty;
 
@@ -27,8 +27,6 @@ public class SwMethodDocCheck extends MagikCheck {
   private static final String MESSAGE = "No or invalid method doc: %s.";
 
   private static final boolean DEFAULT_ALLOW_BLANK_METHOD_DOC = false;
-  private static final String PARAMETER_REGEXP = "[ \t]?([\\p{Lu}\\d_?]+)[^\\p{Lu}\\d_?]?";
-  private static final Pattern PARAMETER_PATTERN = Pattern.compile(PARAMETER_REGEXP);
 
   /** Allow blank method doc. */
   @RuleProperty(
@@ -98,7 +96,7 @@ public class SwMethodDocCheck extends MagikCheck {
     final String methodDoc = this.extractDoc(node);
     final Set<String> uppercased = new HashSet<>();
 
-    final Matcher matcher = PARAMETER_PATTERN.matcher(methodDoc);
+    final Matcher matcher = SwMethodDocParser.PARAMETER_PATTERN.matcher(methodDoc);
     while (matcher.find()) {
       final String name = matcher.group(1);
       uppercased.add(name);
