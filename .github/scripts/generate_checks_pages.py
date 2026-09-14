@@ -9,6 +9,7 @@ import html2text
 
 OUTPUT_FOLDER = Path("wiki/checks")
 INDEX_FILE = OUTPUT_FOLDER / "Checks-Index.md"
+OPTIONS_FILE = OUTPUT_FOLDER / "Checks-Options.md"
 CHECK_TYPES = {
     "Magik checks": (
         Path("magik-checks/src/main/java/nl/ramsolutions/sw/checks/magik"),
@@ -44,9 +45,7 @@ CHECK_TYPES = {
 FOOTER_NOTE = \
     """\n> [!NOTE]\n> This page is generated. """ \
     """Any changes made to this page through the wiki will be lost in the future.\n"""
-TABLE_HEADER = (
-    """\n## Options\n\n| Option | Default value | Description |\n| --- | --- | --- |"""
-)
+OPTIONS_TABLE = "| Option | Default value | Description |\n| --- | --- | --- |"
 
 
 def write_file(file_path: Path, content: str):
@@ -106,23 +105,37 @@ def extract_rule_properties(java_file: Path) -> list[str]:
     return props
 
 
-def java_to_markdown(java_file: Path) -> str:
-    """Convert Java @RuleProperty annotations to Markdown table."""
+def java_to_markdown(java_file: Path, heading_level: int = 2) -> str:
+    """Convert Java @RuleProperty annotations to a Markdown Options table, if any exist."""
     properties = extract_rule_properties(java_file)
     if not properties:
         return ""
-    return "\n".join([TABLE_HEADER, *properties, ""]) + "\n"
+    heading = "#" * heading_level
+    return "\n".join([f"\n{heading} Options\n\n{OPTIONS_TABLE}", *properties, ""]) + "\n"
 
 
 def generate_markdown_pages():
-    """Generate Markdown pages for all checks and an index page."""
+    """Generate Markdown pages for all checks, a properties overview page, and an index page."""
     # pylint: disable=too-many-locals
     OUTPUT_FOLDER.mkdir(parents=True, exist_ok=True)
 
-    index_content = ["# Available checks\n"]
+    index_content = [
+        "# Available checks\n",
+        "\nSee [Checks-Options](Checks-Options) for an overview of all checks "
+        "that have configurable properties.\n",
+    ]
+    options_sections = [
+        "<!-- markdownlint-disable MD013 MD024 -->",
+        "# Configurable check properties",
+        "This page lists every check that has configurable properties, together with their "
+        "options and default values. Checks without configurable properties are omitted; "
+        "see [Checks-Index](Checks-Index) for the full list of checks.",
+    ]
+
     for check_type, (java_folder, sonar_folder) in CHECK_TYPES.items():
         index_content.append(f"\n## {check_type}\n\n")
 
+        check_sections = []
         for json_file in sorted(sonar_folder.glob("*.json")):
             file_name = json_file.stem
             output_file = OUTPUT_FOLDER / f"Check-{file_name}.md"
@@ -152,10 +165,24 @@ def generate_markdown_pages():
             joined_parts = "\n".join(part for part in parts if part)
 
             write_file(output_file, joined_parts)
+
             index_content.append(f"- **[{title}](Check-{file_name})**\n")
+
+            options_properties = java_to_markdown(java_file, heading_level=4).strip()
+            if options_properties:
+                check_sections.append(
+                    "\n\n".join([f"### [{title}](Check-{file_name})", options_properties])
+                )
+
+        if check_sections:
+            options_sections.append(f"## {check_type}")
+            options_sections.extend(check_sections)
 
     index_content.append(FOOTER_NOTE)
     write_file(INDEX_FILE, "".join(index_content))
+
+    options_sections.append(FOOTER_NOTE.strip())
+    write_file(OPTIONS_FILE, "\n\n".join(options_sections) + "\n")
 
 
 if __name__ == "__main__":
