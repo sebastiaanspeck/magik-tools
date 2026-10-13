@@ -39,6 +39,8 @@ class MagikNumberParserTest {
     "'1.0', 1.0",
     "'100.0', 100.0",
     "'16e-5', 0.0001600",
+    "'4.0e08', 400000000.0",
+    "'1.5E3', 1500.0",
   })
   void testValidFloat(final ArgumentsAccessor argumentsAccessor) {
     final String numberStr = argumentsAccessor.getString(0);

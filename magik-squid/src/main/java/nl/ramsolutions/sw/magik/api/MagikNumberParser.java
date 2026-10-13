@@ -35,7 +35,7 @@ public final class MagikNumberParser {
           pow = Double.valueOf(Math.pow(10, n)).longValue();
         }
         if (exponent instanceof final Double exponentDouble) {
-          number = exponentDouble * (double) pow;
+          number = exponentDouble * pow.doubleValue();
         } else if (exponent instanceof final Long exponentLong) {
           if (pow instanceof final Double powDouble) {
             number = exponentLong * powDouble;
